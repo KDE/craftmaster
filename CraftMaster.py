@@ -97,7 +97,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", action="store", required=True)
 
-    parser.add_argument("-c", "--commands", nargs="*" )
+    parser.add_argument("-c", "--commands", nargs=argparse.REMAINDER )
 
     args = parser.parse_args()
 
