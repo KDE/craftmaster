@@ -6,8 +6,11 @@ import subprocess
 
 class CraftMaster(object):
     def __init__(self, configFile, commands):
+        self.commands = commands
         self._init()
-        self._setConfig(configFile, commands)
+        self._setConfig(configFile)
+        # update craft and clear cahces
+        self._exec(["craft"])
 
 
 
@@ -33,7 +36,7 @@ class CraftMaster(object):
                 subprocess.run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(os.getcwd(), "craft-clone")])
             self.craftRoots[root] = craftRoot
 
-    def _setConfig(self, configFile, commands):
+    def _setConfig(self, configFile):
         parser = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
         parser.optionxform = lambda option: option
         parser.read(configFile)
@@ -45,24 +48,26 @@ class CraftMaster(object):
         self._setRoots(roots)
 
         if "GeneralSettings" in parser:
-            self.setSetting(parser["GeneralSettings"].items())
+            self._setSetting(parser["GeneralSettings"].items())
 
         for root in roots:
             if root in parser:
-                self.setSetting(parser[root].items(), [self.craftRoots[root]])
+                self._setSetting(parser[root].items(), [self.craftRoots[root]])
 
-        if not commands:
-            commands = []
+        if not self.commands:
+            self.commands = []
             if "ListFile" in parser["General"]:
                 listFile = parser["General"]["ListFile"]
-                if not os.path.isabs(listFile):
-                    listFile = os.path.join(os.getcwd(), listFile)
-                commands += ["--list-file", listFile]
+                if listFile:
+                    if not os.path.isabs(listFile):
+                        listFile = os.path.join(os.getcwd(), listFile)
+                    self.commands += ["--list-file", listFile]
             if "Command" in parser["General"]:
-                commands += parser["General"]["Command"].split(" ")
-            exit(self.run(commands))
+                command = parser["General"]["Command"]
+                if command:
+                    self.commands += command.split(" ")
 
-    def setSetting(self, settings, roots=None):
+    def _setSetting(self, settings, roots=None):
         if not roots:
             roots = self.craftRoots.values()
         for craftDir in roots:
@@ -83,13 +88,16 @@ class CraftMaster(object):
             with open(ini, 'wt+') as configfile:
                 parser.write(configfile)
 
-    def run(self,  args):
+    def _exec(self, args):
         for craftDir  in self.craftRoots.values():
             print(" ".join(args))
             out = subprocess.run(["powershell", "-NoProfile", os.path.join(craftDir, "craft", "craftenv.ps1"), "craft"] + args)
             if not out.returncode == 0:
                 return  out.returncode
         return 0
+
+    def run(self):
+        return self._exec(self.commands)
 
 
 
@@ -102,6 +110,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     master = CraftMaster(args.config, args.commands)
-
-    exit(master.run(args.commands))
-    parser.print_help()
+    exit(master.run())
