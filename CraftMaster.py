@@ -5,32 +5,44 @@ import shutil
 import subprocess
 
 class CraftMaster(object):
-    def __init__(self):
-        self.craftRoots = {}
+    def __init__(self, configFile, commands):
+        self._init()
+        self._setConfig(configFile, commands)
 
 
-    def setRoots(self, craftRoots):
+
+    def _init(self):
+        if not subprocess.getoutput("git config --global --get url.git://anongit.kde.org/.insteadof") == "kde:":
+            subprocess.run(["git", "config", "--global", "url.git://anongit.kde.org/.insteadOf", "kde:"])
+            subprocess.run(["git", "config", "--global", "url.ssh://git@git.kde.org/.pushInsteadOf", "kde:"])
+            subprocess.run(["git", "config", "--global", "core.autocrlf", "false"])
+            subprocess.run(["git", "config", "--system", "core.autocrlf", "false"])
+        craftClone = os.path.join(os.getcwd(), "craft-clone")
+        if not os.path.exists(craftClone):
+            subprocess.run(["git", "clone", "kde:craft", craftClone])
+
+
+
+    def _setRoots(self, craftRoots):
         self.craftRoots = {}
         for root in craftRoots:
-            craftRoot = root
-            if not os.path.isabs(craftRoot):
-                craftRoot = os.path.join(os.getcwd(), craftRoot)
+            craftRoot = os.path.join(os.getcwd(), root)
+            if not os.path.isdir(craftRoot):
+                os.makedirs(os.path.join(craftRoot, "etc"))
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
-                print(f"Failed to dtect craft in {root}")
-                exit(1)
+                subprocess.run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(os.getcwd(), "craft-clone")])
             self.craftRoots[root] = craftRoot
 
-    def setConfig(self, configFile, commands):
-        parser = configparser.ConfigParser()
+    def _setConfig(self, configFile, commands):
+        parser = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+        parser.optionxform = lambda option: option
         parser.read(configFile)
-        roots = [root for root in parser.sections() if not root in ["General", "GeneralSettings"]]
-        print(roots)
+        roots = [root for root in parser.sections() if not root in ["General", "GeneralSettings", "Variables"]]
         if not roots:
             print("Please specify at least one root category")
             exit(0)
 
-        self.setRoots(roots)
-
+        self._setRoots(roots)
 
         if "GeneralSettings" in parser:
             self.setSetting(parser["GeneralSettings"].items())
@@ -39,9 +51,6 @@ class CraftMaster(object):
             if root in parser:
                 self.setSetting(parser[root].items(), [self.craftRoots[root]])
 
-        exit()
-
-        exit()
         if not commands:
             commands = []
             if "ListFile" in parser["General"]:
@@ -57,12 +66,16 @@ class CraftMaster(object):
         if not roots:
             roots = self.craftRoots.values()
         for craftDir in roots:
-            ini = os.path.join(craftDir, "etc", "kdesettings.ini")
-            if not os.path.exists(ini):
-                shutil.copy(os.path.join(craftDir, "craft", "kdesetings.ini"), ini)
             parser = configparser.ConfigParser()
-            parser.read(ini)
+            ini = os.path.join(craftDir, "etc", "kdesettings.ini")
+            if not os.path.isfile(ini):
+                parser.read(os.path.join(craftDir, "craft", "kdesettings.ini"))
+            else:
+                parser.read(ini)
             for key, value in settings:
+                if not "/" in key:
+                    print(f"Invalid option: {key} = {value}")
+                    exit(1)
                 sectin, key = key.split("/", 1)
                 if not sectin in parser:
                     parser.add_section(sectin)
@@ -82,20 +95,13 @@ class CraftMaster(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--craft-roots", action="store", nargs="*")
-    group.add_argument("--master-config", action="store")
+    parser.add_argument("--config", action="store", required=True)
 
     parser.add_argument("-c", "--commands", nargs="*" )
 
     args = parser.parse_args()
 
-    master = CraftMaster()
-
-    if not args.master_config:
-        master.setRoots(args.craft_roots)
-    else:
-        master.setConfig(args.master_config, args.commands)
+    master = CraftMaster(args.config, args.commands)
 
     exit(master.run(args.commands))
     parser.print_help()
