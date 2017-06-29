@@ -103,7 +103,7 @@ class CraftMaster(object):
     def _exec(self, args):
         for craftDir  in self.craftRoots.values():
             print(" ".join(args))
-            out = subprocess.run(["powershell", "-NoProfile", os.path.join(craftDir, "craft", "craftenv.ps1"), "craft"] + args)
+            out = subprocess.run(["powershell", "-NoProfile", os.path.join(craftDir, "craft", "craftenv.ps1"), "craft"] + args + [ ";", "exit", "$LASTEXITCODE"])
             if not out.returncode == 0:
                 return  out.returncode
         return 0
