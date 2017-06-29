@@ -4,6 +4,9 @@ import os
 import shutil
 import subprocess
 
+import sys
+
+
 class CraftMaster(object):
     def __init__(self, configFile, commands):
         self.commands = commands
@@ -103,7 +106,7 @@ class CraftMaster(object):
     def _exec(self, args):
         for craftDir  in self.craftRoots.values():
             print(" ".join(args))
-            out = subprocess.run(["powershell", "-NoProfile", os.path.join(craftDir, "craft", "craftenv.ps1"), "craft"] + args + [ ";", "exit", "$LASTEXITCODE"])
+            out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + args)
             if not out.returncode == 0:
                 return  out.returncode
         return 0
