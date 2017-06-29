@@ -9,8 +9,6 @@ class CraftMaster(object):
         self.commands = commands
         self._init()
         self._setConfig(configFile)
-        # update craft and clear cahces
-        self._exec(["craft"])
 
 
 
@@ -77,6 +75,9 @@ class CraftMaster(object):
                 parser.read(os.path.join(craftDir, "craft", "kdesettings.ini"))
             else:
                 parser.read(ini)
+                cache = os.path.join(craftDir, "etc", "cache.pickle")
+                if os.path.exists(cache):
+                    os.remove(cache)
             for key, value in settings:
                 if not "/" in key:
                     print(f"Invalid option: {key} = {value}")
