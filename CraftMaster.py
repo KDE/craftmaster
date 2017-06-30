@@ -36,7 +36,7 @@ class CraftMaster(object):
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
         for root in craftRoots:
-            craftRoot = os.path.join(workDir, root)
+            craftRoot = os.path.abspath(os.path.join(workDir, root))
             if not os.path.isdir(craftRoot):
                 os.makedirs(os.path.join(craftRoot, "etc"))
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
@@ -66,11 +66,15 @@ class CraftMaster(object):
             if root in parser:
                 self._setSetting(parser[root].items(), [self.craftRoots[root]])
 
-        if not self.commands:
+        if None in self.commands:
             if "Command" in parser["General"]:
                 command = parser["General"]["Command"]
                 if command:
-                    self.commands = command.split(";")
+                    self.commands = [c.strip().split(" ") for c in command.split(";")]
+                else:
+                    print("Please specify a command to run.\n"
+                          "Either pass -c COMMAND to CraftMaster or set [General]Command in your configuration.")
+                    exit(1)
 
     def _setSetting(self, settings, roots=None):
         if not roots:
@@ -100,7 +104,7 @@ class CraftMaster(object):
         for craftDir  in self.craftRoots.values():
             for command in args:
                 print(f"{craftDir}: {command}")
-                out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py"), command])
+                out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
                 if not out.returncode == 0:
                     return  out.returncode
         return 0
@@ -118,5 +122,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    master = CraftMaster(args.config, args.commands)
+    master = CraftMaster(args.config, [args.commands])
     exit(master.run())
