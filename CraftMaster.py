@@ -99,7 +99,7 @@ class CraftMaster(object):
     def _exec(self, args):
         for craftDir  in self.craftRoots.values():
             for command in args:
-                print("{craftDir}: {command}")
+                print(f"{craftDir}: {command}")
                 out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py"), command])
                 if not out.returncode == 0:
                     return  out.returncode
