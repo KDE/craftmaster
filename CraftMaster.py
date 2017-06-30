@@ -72,7 +72,7 @@ class CraftMaster(object):
                 listFile = parser["General"]["ListFile"]
                 if listFile:
                     if not os.path.isabs(listFile):
-                        listFile = os.path.join(os.getcwd(), listFile)
+                        listFile = os.path.join(workDir, listFile)
                     self.commands += ["--list-file", listFile]
             if "Command" in parser["General"]:
                 command = parser["General"]["Command"]
