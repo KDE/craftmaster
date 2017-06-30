@@ -15,7 +15,7 @@ class CraftMaster(object):
 
     @property
     def defaultWorkDir(self):
-        return os.path.join(os.path.dirname(__file__), "..")
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 
