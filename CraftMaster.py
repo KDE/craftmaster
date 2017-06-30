@@ -8,8 +8,9 @@ import sys
 
 
 class CraftMaster(object):
-    def __init__(self, configFile, commands):
+    def __init__(self, configFile, commands, variables):
         self.commands = commands
+        self.variables = variables
         self._setConfig(configFile)
 
 
@@ -47,6 +48,12 @@ class CraftMaster(object):
         parser = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
         parser.optionxform = lambda option: option
         parser.read(configFile)
+        for var in self.variables:
+            if not "=" in var:
+                print(f"Invalid variable: {var}")
+                exit(1)
+            key, value = var.split("=", 1)
+            parser["Variables"][key] = value
         if not "Root" in parser["Variables"]:
             parser["Variables"]["Root"] = self.defaultWorkDir
         workDir = parser["Variables"]["Root"]
@@ -117,10 +124,10 @@ class CraftMaster(object):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", action="store", required=True)
-
+    parser.add_argument("--variables", action="store", nargs="+")
     parser.add_argument("-c", "--commands", nargs=argparse.REMAINDER )
 
     args = parser.parse_args()
 
-    master = CraftMaster(args.config, [args.commands])
+    master = CraftMaster(args.config, [args.commands], args.variables)
     exit(master.run())
