@@ -67,11 +67,10 @@ class CraftMaster(object):
                 self._setSetting(parser[root].items(), [self.craftRoots[root]])
 
         if not self.commands:
-            self.commands = []
             if "Command" in parser["General"]:
                 command = parser["General"]["Command"]
                 if command:
-                    self.commands += command.split(" ")
+                    self.commands = command.split(";")
 
     def _setSetting(self, settings, roots=None):
         if not roots:
@@ -99,10 +98,11 @@ class CraftMaster(object):
 
     def _exec(self, args):
         for craftDir  in self.craftRoots.values():
-            print(" ".join(args))
-            out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + args)
-            if not out.returncode == 0:
-                return  out.returncode
+            for command in args:
+                print("{craftDir}: {command}")
+                out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py"), command])
+                if not out.returncode == 0:
+                    return  out.returncode
         return 0
 
     def run(self):
