@@ -28,7 +28,7 @@ class CraftMaster(object):
             subprocess.run(["git", "config", "--system", "core.autocrlf", "false"])
         craftClone = os.path.join(workDir, "craft-clone")
         if not os.path.exists(craftClone):
-            subprocess.run(["git", "clone", "kde:craft", craftClone])
+            subprocess.run(["git", "clone", "kde:craft", craftClone], stderr=subprocess.PIPE)
         else:
             subprocess.run(["git", "pull"],  cwd=craftClone)
 
