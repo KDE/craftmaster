@@ -129,5 +129,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    master = CraftMaster(args.config, [args.commands], args.variables)
+    master = CraftMaster(args.config, [args.commands], args.variables or [])
     exit(master.run())
