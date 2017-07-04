@@ -45,6 +45,9 @@ class CraftMaster(object):
             self.craftRoots[root] = craftRoot
 
     def _setConfig(self, configFile):
+        if not os.path.isfile(configFile):
+            print(f"Config file {configFile} does not exist.")
+            exit(1)
         parser = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
         parser.optionxform = lambda option: option
         parser.read(configFile)
