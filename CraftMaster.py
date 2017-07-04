@@ -59,6 +59,8 @@ class CraftMaster(object):
             parser["Variables"][key] = value
         if not "Root" in parser["Variables"]:
             parser["Variables"]["Root"] = self.defaultWorkDir
+        with open(configFile + ".dump", "wt+" ) as dump:
+            parser.write(dump)
         workDir = parser["Variables"]["Root"]
         roots = [root for root in parser.sections() if not root in ["General", "GeneralSettings", "Variables"]]
         if not roots:
