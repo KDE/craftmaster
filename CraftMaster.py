@@ -81,7 +81,7 @@ class CraftMaster(object):
         self._setRoots(workDir, self.targets)
 
         if "GeneralSettings" in parser:
-            self._setSetting(parser["GeneralSettings"].items())
+            self._setSetting(parser["GeneralSettings"].items(), clean=True)
 
         for root in self.targets:
             if root in parser:
@@ -97,19 +97,16 @@ class CraftMaster(object):
                           "Either pass -c COMMAND to CraftMaster or set [General]Command in your configuration.")
                     exit(1)
 
-    def _setSetting(self, settings, roots=None):
+    def _setSetting(self, settings, roots=None, clean=False):
         if not roots:
             roots = self.craftRoots.values()
         for craftDir in roots:
             parser = configparser.ConfigParser()
             ini = os.path.join(craftDir, "etc", "kdesettings.ini")
-            if not os.path.isfile(ini):
+            if clean or not os.path.isfile(ini):
                 parser.read(os.path.join(craftDir, "craft", "kdesettings.ini"))
             else:
                 parser.read(ini)
-                cache = os.path.join(craftDir, "etc", "cache.pickle")
-                if os.path.exists(cache):
-                    os.remove(cache)
             for key, value in settings:
                 if not "/" in key:
                     print(f"Invalid option: {key} = {value}")
@@ -120,6 +117,10 @@ class CraftMaster(object):
                 parser[sectin][key] = value
             with open(ini, 'wt+') as configfile:
                 parser.write(configfile)
+
+            cache = os.path.join(craftDir, "etc", "cache.pickle")
+            if os.path.exists(cache):
+                os.remove(cache)
 
     def _exec(self, args):
         for craftDir  in self.craftRoots.values():
