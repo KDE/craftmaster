@@ -69,6 +69,7 @@ class CraftMaster(object):
             if not self.targets.issubset(targets):
                 for n in self.targets - targets:
                     print(f"Target {n} is not a valid target. Valid targets are {targets}")
+                exit(1)
         else:
             self.targets = targets
 
