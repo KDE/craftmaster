@@ -123,7 +123,7 @@ class CraftMaster(object):
                 os.remove(cache)
 
     def _exec(self, args):
-        for craftDir  in self.craftRoots.values():
+        for craftDir  in sorted(self.craftRoots.values()):
             for command in args:
                 print(f"{craftDir}: craft {' '.join(command)}")
                 out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
