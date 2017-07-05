@@ -102,10 +102,14 @@ class CraftMaster(object):
             roots = self.craftRoots.values()
         for craftDir in roots:
             parser = configparser.ConfigParser()
-            parser.read(os.path.join(craftDir, "craft", "kdesettings.ini"))
-            cache = os.path.join(craftDir, "etc", "cache.pickle")
-            if os.path.exists(cache):
-                os.remove(cache)
+            ini = os.path.join(craftDir, "etc", "kdesettings.ini")
+            if not os.path.isfile(ini):
+                parser.read(os.path.join(craftDir, "craft", "kdesettings.ini"))
+            else:
+                parser.read(ini)
+                cache = os.path.join(craftDir, "etc", "cache.pickle")
+                if os.path.exists(cache):
+                    os.remove(cache)
             for key, value in settings:
                 if not "/" in key:
                     print(f"Invalid option: {key} = {value}")
@@ -114,7 +118,7 @@ class CraftMaster(object):
                 if not sectin in parser:
                     parser.add_section(sectin)
                 parser[sectin][key] = value
-            with open(os.path.join(craftDir, "etc", "kdesettings.ini"), 'wt+') as configfile:
+            with open(ini, 'wt+') as configfile:
                 parser.write(configfile)
 
     def _exec(self, args):
