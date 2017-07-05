@@ -8,17 +8,16 @@ import sys
 
 
 class CraftMaster(object):
-    def __init__(self, configFile, commands, variables):
+    def __init__(self, configFile, commands, variables, targets):
         self.commands = commands
-        self.variables = variables
+        self.variables = variables or []
+        self.targets = set(targets) if targets else set()
         self._setConfig(configFile)
 
 
     @property
     def defaultWorkDir(self):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-
 
     def _init(self, workDir):
         if not subprocess.getoutput("git config --global --get url.git://anongit.kde.org/.insteadof") == "kde:":
@@ -31,8 +30,6 @@ class CraftMaster(object):
             subprocess.run(["git", "clone", "kde:craft", craftClone], stderr=subprocess.PIPE)
         else:
             subprocess.run(["git", "pull"],  cwd=craftClone)
-
-
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
@@ -51,6 +48,8 @@ class CraftMaster(object):
         parser = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
         parser.optionxform = lambda option: option
         parser.read(configFile)
+        if not "Variables" in parser.sections():
+            parser.add_section("Variables")
         for var in self.variables:
             if not "=" in var:
                 print(f"Invalid variable: {var}")
@@ -62,19 +61,29 @@ class CraftMaster(object):
         with open(configFile + ".dump", "wt+" ) as dump:
             parser.write(dump)
         workDir = parser["Variables"]["Root"]
-        roots = [root for root in parser.sections() if not root in ["General", "GeneralSettings", "Variables"]]
-        if not roots:
-            print("Please specify at least one root category")
-            exit(0)
+
+        targets = set(parser.sections())
+        targets -= set(["General", "GeneralSettings", "Variables"])
+
+        if self.targets:
+            if not self.targets.issubset(targets):
+                for n in self.targets - targets:
+                    print(f"Target {n} is not a valid target. Valid targets are {targets}")
+        else:
+            self.targets = targets
+
+        if not self.targets:
+            print("Please specify at least one target category")
+            exit(1)
 
         self._init(workDir)
 
-        self._setRoots(workDir, roots)
+        self._setRoots(workDir, self.targets)
 
         if "GeneralSettings" in parser:
             self._setSetting(parser["GeneralSettings"].items())
 
-        for root in roots:
+        for root in self.targets:
             if root in parser:
                 self._setSetting(parser[root].items(), [self.craftRoots[root]])
 
@@ -128,11 +137,24 @@ class CraftMaster(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", action="store", required=True)
-    parser.add_argument("--variables", action="store", nargs="+")
-    parser.add_argument("-c", "--commands", nargs=argparse.REMAINDER )
+    parser.add_argument("--config", action="store", required=True,
+                        help="The path to the configuration file.")
+    parser.add_argument("--variables", action="store", nargs="+",
+                        help="Set values for the [Variables] section in the configuration.")
+    parser.add_argument("--targets", action="store", nargs="+",
+                        help="Only use on a subset of targets")
+    parser.add_argument("--print-targets", action="store_true",
+                        help="Print all available targets.")
+    parser.add_argument("-c", "--commands", nargs=argparse.REMAINDER,
+                        help="Commands executed on the taargets. By default the coammand form the configuration is used." )
 
     args = parser.parse_args()
 
-    master = CraftMaster(args.config, [args.commands], args.variables or [])
-    exit(master.run())
+    master = CraftMaster(args.config, [args.commands], args.variables, args.targets)
+    if args.print_targets:
+        print("Targets:")
+        for target in master.targets:
+            print("\t", target)
+    else:
+        exit(master.run())
+    exit(0)
