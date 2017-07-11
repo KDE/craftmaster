@@ -11,6 +11,8 @@ For each one a seperate directory will be created and the commands will be execu
     # Variables:Root: Root is defined relative to CraftMaster and points to the subdirectory work
     [General]
     Command=-p quassel; nsis; --install-deps quassel
+    Branch = master
+    ShallowClone = True
     
     # Variables defined here override the default value
     # The variable names are casesensitive

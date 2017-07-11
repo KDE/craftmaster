@@ -12,6 +12,8 @@ class CraftMaster(object):
         self.commands = commands
         self.variables = variables or []
         self.targets = set(targets) if targets else set()
+        self.branch = "master"
+        self.shallowClone = True
         self._setConfig(configFile)
 
 
@@ -27,9 +29,16 @@ class CraftMaster(object):
             subprocess.run(["git", "config", "--system", "core.autocrlf", "false"])
         craftClone = os.path.join(workDir, "craft-clone")
         if not os.path.exists(craftClone):
-            subprocess.run(["git", "clone", "--depth=1", "kde:craft", craftClone], stderr=subprocess.PIPE)
-        else:
-            subprocess.run(["git", "pull"],  cwd=craftClone)
+            args = []
+            if self.shallowClone:
+                if self.branch == "master":
+                    args += ["--depth=1"]
+                else:
+                    args += ["--branch", self.branch]
+            subprocess.run(["git", "clone"] + args + ["kde:craft", craftClone], stderr=subprocess.STDOUT)
+        subprocess.run(["git", "fetch"],  cwd=craftClone)
+        subprocess.run(["git", "checkout", self.branch],  cwd=craftClone)
+        subprocess.run(["git", "pull"],  cwd=craftClone)
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
@@ -76,6 +85,11 @@ class CraftMaster(object):
         if not self.targets:
             print("Please specify at least one target category")
             exit(1)
+
+        if "Branch" in parser["General"]:
+            self.branch = parser["General"]["Branch"]
+        if "ShallowClone" in parser["General"]:
+            self.shallowClone = parser.getboolean("General", "ShallowClone")
 
         self._init(workDir)
 
