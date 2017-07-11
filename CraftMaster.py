@@ -156,7 +156,8 @@ class CraftMaster(object):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="Craft Master")
+    parser.add_argument("--version", action="version", version='%(prog)s 0.1')
     parser.add_argument("--config", action="store", required=True,
                         help="The path to the configuration file.")
     parser.add_argument("--variables", action="store", nargs="+",
