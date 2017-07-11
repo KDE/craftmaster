@@ -21,12 +21,20 @@ class CraftMaster(object):
     def defaultWorkDir(self):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
+    def _run(self, args, **kwargs):
+        command = " ".join(args)
+        print(command)
+        out = subprocess.run(args, stderr=subprocess.STDOUT, **kwargs)
+        if not out.returncode == 0:
+            print(f"Command {command} failed with exit code: {out.returncode}")
+            exit(1)
+    
     def _init(self, workDir):
         if not subprocess.getoutput("git config --global --get url.git://anongit.kde.org/.insteadof") == "kde:":
-            subprocess.run(["git", "config", "--global", "url.git://anongit.kde.org/.insteadOf", "kde:"])
-            subprocess.run(["git", "config", "--global", "url.ssh://git@git.kde.org/.pushInsteadOf", "kde:"])
-            subprocess.run(["git", "config", "--global", "core.autocrlf", "false"])
-            subprocess.run(["git", "config", "--system", "core.autocrlf", "false"])
+            self._run(["git", "config", "--global", "url.git://anongit.kde.org/.insteadOf", "kde:"])
+            self._run(["git", "config", "--global", "url.ssh://git@git.kde.org/.pushInsteadOf", "kde:"])
+            self._run(["git", "config", "--global", "core.autocrlf", "false"])
+            self._run(["git", "config", "--system", "core.autocrlf", "false"])
         craftClone = os.path.join(workDir, "craft-clone")
         if not os.path.exists(craftClone):
             args = []
@@ -35,10 +43,10 @@ class CraftMaster(object):
                     args += ["--depth=1"]
                 else:
                     args += ["--branch", self.branch]
-            subprocess.run(["git", "clone"] + args + ["kde:craft", craftClone], stderr=subprocess.STDOUT)
-        subprocess.run(["git", "fetch"],  cwd=craftClone)
-        subprocess.run(["git", "checkout", self.branch],  cwd=craftClone)
-        subprocess.run(["git", "pull"],  cwd=craftClone)
+            self._run(["git", "clone"] + args + ["kde:craft", craftClone])
+        self._run(["git", "fetch"],  cwd=craftClone)
+        self._run(["git", "checkout", self.branch],  cwd=craftClone)
+        self._run(["git", "pull"],  cwd=craftClone)
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
@@ -47,7 +55,7 @@ class CraftMaster(object):
             if not os.path.isdir(craftRoot):
                 os.makedirs(os.path.join(craftRoot, "etc"))
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
-                subprocess.run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
+                self._run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
             self.craftRoots[root] = craftRoot
 
     def _setConfig(self, configFile):
@@ -140,11 +148,7 @@ class CraftMaster(object):
     def _exec(self, args):
         for craftDir  in sorted(self.craftRoots.values()):
             for command in args:
-                print(f"{craftDir}: craft {' '.join(command)}")
-                out = subprocess.run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
-                if not out.returncode == 0:
-                    return  out.returncode
-        return 0
+                self._run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
 
     def run(self):
         return self._exec(self.commands)
