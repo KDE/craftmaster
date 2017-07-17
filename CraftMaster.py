@@ -6,20 +6,16 @@ import subprocess
 
 import sys
 
+from Config import Config
+
 
 class CraftMaster(object):
     def __init__(self, configFile, commands, variables, targets):
-        self.commands = commands
-        self.variables = variables or []
+        self.commands = commands or []
         self.targets = set(targets) if targets else set()
         self.branch = "master"
+        self._setConfig(configFile, variables)
         self.shallowClone = True
-        self._setConfig(configFile)
-
-
-    @property
-    def defaultWorkDir(self):
-        return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
     def _run(self, args, **kwargs):
         command = " ".join(args)
@@ -28,7 +24,7 @@ class CraftMaster(object):
         if not out.returncode == 0:
             print(f"Command {command} failed with exit code: {out.returncode}")
             exit(1)
-    
+
     def _init(self, workDir):
         if not subprocess.getoutput("git config --global --get url.git://anongit.kde.org/.insteadof") == "kde:":
             self._run(["git", "config", "--global", "url.git://anongit.kde.org/.insteadOf", "kde:"])
@@ -58,67 +54,37 @@ class CraftMaster(object):
                 self._run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
             self.craftRoots[root] = craftRoot
 
-    def _setConfig(self, configFile):
-        if not os.path.isfile(configFile):
-            print(f"Config file {configFile} does not exist.")
-            exit(1)
-        parser = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
-        parser.optionxform = lambda option: option
-        parser.read(configFile)
-        if not "Variables" in parser.sections():
-            parser.add_section("Variables")
-        for var in self.variables:
-            if not "=" in var:
-                print(f"Invalid variable: {var}")
-                exit(1)
-            key, value = var.split("=", 1)
-            parser["Variables"][key] = value
-        if not "Root" in parser["Variables"]:
-            parser["Variables"]["Root"] = self.defaultWorkDir
-        with open(configFile + ".dump", "wt+" ) as dump:
-            parser.write(dump)
-        workDir = parser["Variables"]["Root"]
 
-        targets = set(parser.sections())
-        targets -= set(["General", "GeneralSettings", "Variables"])
+    def _setConfig(self, configFile, variables):
+        self.config = Config(configFile, variables)
+
+        workDir = self.config.get("Variables", "Root")
 
         if self.targets:
-            if not self.targets.issubset(targets):
-                for n in self.targets - targets:
-                    print(f"Target {n} is not a valid target. Valid targets are {targets}")
+            if not self.targets.issubset(self.config.targets):
+                for n in self.targets - self.config.targets:
+                    print(f"Target {n} is not a valid target. Valid targets are {self.config.targets}")
                 exit(1)
         else:
-            self.targets = targets
+            self.targets = self.config.targets
 
         if not self.targets:
             print("Please specify at least one target category")
             exit(1)
 
-        if "Branch" in parser["General"]:
-            self.branch = parser["General"]["Branch"]
-        if "ShallowClone" in parser["General"]:
-            self.shallowClone = parser.getboolean("General", "ShallowClone")
+        self.branch = self.config.get("General", "Branch", self.branch)
+        self.shallowClone = self.config.getBool("General", "ShallowClone", True)
 
         self._init(workDir)
-
         self._setRoots(workDir, self.targets)
 
-        if "GeneralSettings" in parser:
-            self._setSetting(parser["GeneralSettings"].items(), clean=True)
+        if "GeneralSettings" in self.config:
+            self._setSetting(self.config.getSection("GeneralSettings"), clean=True)
 
         for root in self.targets:
-            if root in parser:
-                self._setSetting(parser[root].items(), [self.craftRoots[root]])
+            if root in self.config:
+                self._setSetting(self.config.getSection(root), [self.craftRoots[root]])
 
-        if None in self.commands:
-            if "Command" in parser["General"]:
-                command = parser["General"]["Command"]
-                if command:
-                    self.commands = [c.strip().split(" ") for c in command.split(";")]
-                else:
-                    print("Please specify a command to run.\n"
-                          "Either pass -c COMMAND to CraftMaster or set [General]Command in your configuration.")
-                    exit(1)
 
     def _setSetting(self, settings, roots=None, clean=False):
         if not roots:
@@ -145,13 +111,22 @@ class CraftMaster(object):
             if os.path.exists(cache):
                 os.remove(cache)
 
-    def _exec(self, args):
-        for craftDir  in sorted(self.craftRoots.values()):
-            for command in args:
-                self._run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
+    def _exec(self, craftDir, args):
+        for command in args:
+            self._run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
 
     def run(self):
-        return self._exec(self.commands)
+        for target, craftDir  in sorted(self.craftRoots.items()):
+            commands = self.commands
+            if not commands:
+                commands = self.config.getSetting("Command", target)
+                if commands:
+                    commands = [c.strip().split(" ") for c in commands.split(";")]
+                if not commands:
+                    print("Please specify a command to run.\n"
+                          "Either pass -c COMMAND to CraftMaster or set [General]Command in your configuration.")
+                    exit(1)
+            return self._exec(craftDir, commands)
 
 
 
@@ -171,7 +146,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    master = CraftMaster(args.config, [args.commands], args.variables, args.targets)
+    master = CraftMaster(args.config, args.commands, args.variables, args.targets)
     if args.print_targets:
         print("Targets:")
         for target in master.targets:
