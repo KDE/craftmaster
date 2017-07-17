@@ -67,5 +67,7 @@ For each one a seperate directory will be created and the commands will be execu
 
 
 == Examples ==
+
 [GammaRay](https://github.com/KDAB/GammaRay/blob/master/appveyor.yml)
+
 [Charm](https://github.com/KDAB/Charm/blob/master/appveyor.yml)
