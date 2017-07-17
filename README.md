@@ -66,7 +66,7 @@ For each one a seperate directory will be created and the commands will be execu
     General/Architecture = x86
 
 
-== Examples ==
+## Examples ##
 
 [GammaRay](https://github.com/KDAB/GammaRay/blob/master/appveyor.yml)
 
