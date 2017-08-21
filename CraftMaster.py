@@ -11,7 +11,7 @@ from Config import Config
 
 class CraftMaster(object):
     def __init__(self, configFile, commands, variables, targets):
-        self.commands = commands or []
+        self.commands = [commands] or []
         self.targets = set(targets) if targets else set()
         self.branch = "master"
         self._setConfig(configFile, variables)
@@ -108,7 +108,7 @@ class CraftMaster(object):
             self._run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
 
     def run(self):
-        for target, craftDir  in sorted(self.craftRoots.items()):
+        for target, craftDir in sorted(self.craftRoots.items()):
             commands = self.commands
             if not commands:
                 commands = self.config.getSetting("Command", target)
@@ -118,7 +118,7 @@ class CraftMaster(object):
                     print("Please specify a command to run.\n"
                           "Either pass -c COMMAND to CraftMaster or set [General]Command in your configuration.")
                     exit(1)
-            return self._exec(craftDir, commands)
+            self._exec(craftDir, commands)
 
 
 
