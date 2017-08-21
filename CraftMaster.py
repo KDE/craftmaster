@@ -91,9 +91,9 @@ class CraftMaster(object):
             roots = self.craftRoots.values()
         for craftDir in roots:
             parser = configparser.ConfigParser()
-            ini = os.path.join(craftDir, "etc", "kdesettings.ini")
+            ini = os.path.join(craftDir, "etc", "CraftSettings.ini")
             if clean or not os.path.isfile(ini):
-                parser.read(os.path.join(craftDir, "craft", "kdesettings.ini"))
+                parser.read(os.path.join(craftDir, "craft", "CraftSettings.ini"))
             else:
                 parser.read(ini)
             for key, value in settings:
