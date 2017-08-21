@@ -40,11 +40,11 @@ class Config(object):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
-    def getSetting(self, key, target=None, default=None):
+    def getSetting(self, key, target=None, default=configparser._UNSET):
         if target:
             section = f"{target}-settings"
             return self.get(section, key, self.get("General", key, default=default))
-        return self.get("General", key)
+        return self.get("General", key, default=default)
 
 
     @property
@@ -66,12 +66,10 @@ class Config(object):
         return self._config[section].items()
 
 
-    def get(self, section, key, default=None):
-        if default and not (section, key) in self:
+    def get(self, section, key, default=configparser._UNSET):
+        if default != configparser._UNSET and not (section, key) in self:
             return default
         return self._config.get(section, key)
 
-    def getBool(self, section, key, default=None):
-        if default and not (section, key) in self:
-            return default
-        return self._config.getboolean(section, key)
+    def getBool(self, section, key, default=False):
+        return self._config._convert_to_boolean(self.get(section, key, default=default))
