@@ -26,11 +26,6 @@ class CraftMaster(object):
             exit(1)
 
     def _init(self, workDir):
-        if not subprocess.getoutput("git config --global --get url.git://anongit.kde.org/.insteadof") == "kde:":
-            self._run(["git", "config", "--global", "url.git://anongit.kde.org/.insteadOf", "kde:"])
-            self._run(["git", "config", "--global", "url.ssh://git@git.kde.org/.pushInsteadOf", "kde:"])
-            self._run(["git", "config", "--global", "core.autocrlf", "false"])
-            self._run(["git", "config", "--system", "core.autocrlf", "false"])
         craftClone = os.path.join(workDir, "craft-clone")
         if not os.path.exists(craftClone):
             args = []
@@ -39,10 +34,7 @@ class CraftMaster(object):
                     args += ["--depth=1"]
                 else:
                     args += ["--branch", self.branch]
-            self._run(["git", "clone"] + args + ["kde:craft", craftClone])
-        self._run(["git", "fetch"],  cwd=craftClone)
-        self._run(["git", "checkout", self.branch],  cwd=craftClone)
-        self._run(["git", "pull"],  cwd=craftClone)
+            self._run(["git", "clone"] + args + ["git://anongit.kde.org/craft.git", craftClone])
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
@@ -51,7 +43,7 @@ class CraftMaster(object):
             if not os.path.isdir(craftRoot):
                 os.makedirs(os.path.join(craftRoot, "etc"))
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
-                self._run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
+                self._run(["mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
             self.craftRoots[root] = craftRoot
 
 
