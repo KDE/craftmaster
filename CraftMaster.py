@@ -11,7 +11,7 @@ from Config import Config
 
 class CraftMaster(object):
     def __init__(self, configFile, commands, variables, targets):
-        self.commands = [commands] or []
+        self.commands = [commands] if commands else []
         self.targets = set(targets) if targets else set()
         self.branch = "master"
         self._setConfig(configFile, variables)
