@@ -43,7 +43,7 @@ class CraftMaster(object):
             if not os.path.isdir(craftRoot):
                 os.makedirs(os.path.join(craftRoot, "etc"))
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
-                self._run(["mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
+                self._run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
             self.craftRoots[root] = craftRoot
 
 
