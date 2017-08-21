@@ -85,7 +85,7 @@ class CraftMaster(object):
             parser = configparser.ConfigParser()
             ini = os.path.join(craftDir, "etc", "CraftSettings.ini")
             if clean or not os.path.isfile(ini):
-                parser.read(os.path.join(craftDir, "craft", "CraftSettings.ini"))
+                parser.read(os.path.join(craftDir, "craft", "CraftSettings.ini.template"))
             else:
                 parser.read(ini)
             for key, value in settings:
