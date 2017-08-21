@@ -23,7 +23,7 @@ class Config(object):
                 self._config.set("Variables", key, value)
         self._config.set("Variables", "Root", self.get("Variables", "Root", self.defaultWorkDir))
 
-        if self.getSetting("DumpConfig"):
+        if self.getSetting("DumpConfig", default=False):
             with open(configFile + ".dump", "wt+") as dump:
                 self._config.write(dump)
 
@@ -40,10 +40,10 @@ class Config(object):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
-    def getSetting(self, key, target=None):
+    def getSetting(self, key, target=None, default=None):
         if target:
             section = f"{target}-settings"
-            return self.get(section, key, self.get("General", key))
+            return self.get(section, key, self.get("General", key, default=default))
         return self.get("General", key)
 
 
