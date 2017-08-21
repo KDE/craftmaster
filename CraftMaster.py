@@ -111,20 +111,18 @@ class CraftMaster(object):
         for target, craftDir in sorted(self.craftRoots.items()):
             commands = self.commands
             if not commands:
-                commands = self.config.getSetting("Command", target)
+                commands = self.config.getSetting("Command", target, None)
                 if commands:
                     commands = [c.strip().split(" ") for c in commands.split(";")]
                 if not commands:
-                    print("Please specify a command to run.\n"
-                          "Either pass -c COMMAND to CraftMaster or set [General]Command in your configuration.")
-                    exit(1)
+                    return
             self._exec(craftDir, commands)
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Craft Master")
-    parser.add_argument("--version", action="version", version='%(prog)s 0.1')
+    parser.add_argument("--version", action="version", version='%(prog)s 0.2.1')
     parser.add_argument("--config", action="store", required=True,
                         help="The path to the configuration file.")
     parser.add_argument("--variables", action="store", nargs="+",
