@@ -9,3 +9,25 @@ frameworks
 
 [Notifications]
 qt-libs/snorenotify
+
+[Applications]
+# libkexiv2
+win32libs/exiv2
+
+# KStars
+win32libs/eigen3
+
+# Minuet
+win32libs/glib
+win32libs/fluidsynth
+
+[Extragear]
+# KDevelop
+win32libs/llvm-meta/llvm
+kdesupport/grantlee
+
+# Labplot
+win32libs/gsl
+
+# Skrooge
+dev-util/pkg-config
