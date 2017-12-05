@@ -31,3 +31,6 @@ win32libs/gsl
 
 # Skrooge
 dev-util/pkg-config
+
+# akonadi
+win32libs/boost/boost-graph
