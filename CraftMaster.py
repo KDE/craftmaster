@@ -10,20 +10,32 @@ from Config import Config
 
 
 class CraftMaster(object):
-    def __init__(self, configFile, commands, variables, targets):
+    def __init__(self, configFile, commands, variables, targets, verbose=False):
         self.commands = [commands] if commands else []
         self.targets = set(targets) if targets else set()
         self.branch = "master"
         self._setConfig(configFile, variables)
         self.shallowClone = True
+        self.verbose = verbose
+
+    def _log(self, text, stream=sys.stdout):
+        print(text, file=stream)
+
+    def _error(self, text, fatal=True):
+        self._log(text, stream=sys.stderr)
+        if fatal:
+            exit(1)
+
+    def _debug(self, text):
+        if self.verbose:
+            self._log(text)
 
     def _run(self, args, **kwargs):
         command = " ".join(args)
-        print(command)
+        self._debug(command)
         out = subprocess.run(args, stderr=subprocess.STDOUT, **kwargs)
         if not out.returncode == 0:
-            print(f"Command {command} failed with exit code: {out.returncode}")
-            exit(1)
+            self._error(f"Command {command} failed with exit code: {out.returncode}")
 
     def _init(self, workDir):
         craftClone = os.path.join(workDir, "craft-clone")
@@ -55,14 +67,13 @@ class CraftMaster(object):
         if self.targets:
             if not self.targets.issubset(self.config.targets):
                 for n in self.targets - self.config.targets:
-                    print(f"Target {n} is not a valid target. Valid targets are {self.config.targets}")
+                    self._error(f"Target {n} is not a valid target. Valid targets are {self.config.targets}", fatal=False)
                 exit(1)
         else:
             self.targets = self.config.targets
 
         if not self.targets:
-            print("Please specify at least one target category")
-            exit(1)
+            self._error("Please specify at least one target category")
 
         self.branch = self.config.get("General", "Branch", self.branch)
         self.shallowClone = self.config.getBool("General", "ShallowClone", True)
@@ -90,8 +101,7 @@ class CraftMaster(object):
                 parser.read(ini)
             for key, value in settings:
                 if not "/" in key:
-                    print(f"Invalid option: {key} = {value}")
-                    exit(1)
+                    self._error(f"Invalid option: {key} = {value}")
                 sectin, key = key.split("/", 1)
                 if not sectin in parser:
                     parser.add_section(sectin)
@@ -122,7 +132,9 @@ class CraftMaster(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="Craft Master")
-    parser.add_argument("--version", action="version", version='%(prog)s 0.2.2')
+    parser.add_argument("--version", action="version", version="%(prog)s 0.2.9")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Enable verbose logging of CraftMaster")
     parser.add_argument("--config", action="store", required=True,
                         help="The path to the configuration file.")
     parser.add_argument("--variables", action="store", nargs="+",
@@ -136,7 +148,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    master = CraftMaster(args.config, args.commands, args.variables, args.targets)
+    master = CraftMaster(args.config, args.commands, args.variables, args.targets, verbose=args.verbose)
     if args.print_targets:
         print("Targets:")
         for target in master.targets:
