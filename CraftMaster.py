@@ -14,9 +14,9 @@ class CraftMaster(object):
         self.commands = [commands] if commands else []
         self.targets = set(targets) if targets else set()
         self.branch = "master"
-        self._setConfig(configFile, variables)
         self.shallowClone = True
         self.verbose = verbose
+        self._setConfig(configFile, variables)
 
     def _log(self, text, stream=sys.stdout):
         print(text, file=stream)
