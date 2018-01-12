@@ -3,6 +3,8 @@ import os
 
 
 class Config(object):
+    ReservedSections = {"General", "GeneralSettings", "Variables", "BlueprintSettings"}
+
     def __init__(self, configFile, variables):
         self._targets = None
 
@@ -51,7 +53,7 @@ class Config(object):
     def targets(self):
         if not self._targets:
             targets = set(self._config.sections())
-            targets -= set(["General", "GeneralSettings", "Variables"])
+            targets -= Config.ReservedSections
             for x in targets.copy():
                 if x.endswith("-settings"):
                     targets.remove(x)
