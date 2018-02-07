@@ -74,4 +74,4 @@ class Config(object):
         return self._config.get(section, key)
 
     def getBool(self, section, key, default=False):
-        return self._config._convert_to_boolean(self.get(section, key, default=default))
+        return self._config._convert_to_boolean(self.get(section, key, default=str(default)))
