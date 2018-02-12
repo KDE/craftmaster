@@ -128,7 +128,7 @@ class CraftMaster(object):
 
     def _exec(self, craftDir, args):
         for command in args:
-            self._run([sys.executable, os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
+            self._run([sys.executable, "-u", os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
 
     def run(self):
         for target, craftDir in sorted(self.craftRoots.items()):
