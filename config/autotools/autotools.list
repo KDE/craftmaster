@@ -8,4 +8,5 @@ autotools/assuan2-src
 autotools/gpg-error-src
 autotools/gcrypt-src
 autotools/gpgme-src
+autotools/libdmtx-src
 
