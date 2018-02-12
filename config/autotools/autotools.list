@@ -1,0 +1,11 @@
+# List of C libraries we can't build with msvc but we can link to
+# if they are compiled with mingw
+[runtime]
+libs/runtime
+
+[autotools]
+autotools/assuan2-src
+autotools/gpg-error-src
+autotools/gcrypt-src
+autotools/gpgme-src
+
