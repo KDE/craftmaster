@@ -52,8 +52,7 @@ class CraftMaster(object):
         self.craftRoots = {}
         for root in craftRoots:
             craftRoot = os.path.abspath(os.path.join(workDir, root))
-            if not os.path.isdir(craftRoot):
-                os.makedirs(os.path.join(craftRoot, "etc"))
+            os.makedirs(os.path.join(craftRoot, "etc"), exist_ok=True)
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
                 self._run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
             self.craftRoots[root] = craftRoot
