@@ -11,6 +11,12 @@ frameworks
 qt-libs/snorenotify
 
 [Applications]
+# Various Applications
+kdesupport/qca
+
+# PIM Libraries
+win32libs/libical
+
 # libkexiv2
 win32libs/exiv2
 
