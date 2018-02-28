@@ -41,6 +41,9 @@ dev-util/pkg-config
 # akonadi
 win32libs/boost/boost-graph
 
+# Alkimia
+win32libs/libgmp
+
 # calzy
 ## llvm doesn't install some import libs so we need to cache it to be able to
 ## get it with a cached llvm
