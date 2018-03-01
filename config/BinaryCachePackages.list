@@ -1,5 +1,6 @@
 [Packages]
 dev-util/qtbinpatcher
+dev-util/nsis
 
 [Qt]
 libs/qt5
