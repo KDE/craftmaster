@@ -47,7 +47,6 @@ win32libs/libgmp
 
 # Amarok
 win32libs/taglib
-win32libs/taglib-extras
 
 # calzy
 ## llvm doesn't install some import libs so we need to cache it to be able to
