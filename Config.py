@@ -24,10 +24,36 @@
 
 import configparser
 import os
+import platform
 
 
 class Config(object):
     ReservedSections = {"General", "GeneralSettings", "Variables", "BlueprintSettings"}
+
+    @staticmethod
+    def isWin():
+        return os.name == 'nt'
+
+    @staticmethod
+    def isUnix():
+        return os.name == 'posix'
+
+    @staticmethod
+    def isMac():
+        return Config.isUnix() and platform.system() == 'Darwin'
+
+    @staticmethod
+    def isLinux():
+        return Config.isUnix() and platform.system() == 'Linux'
+
+    @staticmethod
+    def platformPrefix():
+        if Config.isWin():
+            return "windows"
+        elif Config.isMac():
+            return "macos"
+        elif Config.isLinux():
+            return "linux"
 
     def __init__(self, configFile, variables):
         self._targets = None
@@ -49,11 +75,9 @@ class Config(object):
                 self._config.set("Variables", key, value)
         self._config.set("Variables", "Root", self.get("Variables", "Root", self.defaultWorkDir))
 
-        if self.getSetting("DumpConfig", default=False):
+        if self.get("General", "DumpConfig", default=False):
             with open(configFile + ".dump", "wt+") as dump:
                 self._config.write(dump)
-
-
 
     def __contains__( self, key ):
         if isinstance(key, tuple):
@@ -65,27 +89,23 @@ class Config(object):
     def defaultWorkDir(self):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-
-    def getSetting(self, key, target=None, default=configparser._UNSET):
-        if target:
-            section = f"{target}-settings"
-            return self.get(section, key, self.get("General", key, default=default))
-        return self.get("General", key, default=default)
-
-
     @property
     def targets(self):
         if not self._targets:
+            platformPrefix = Config.platformPrefix()
+            def _filter(x):
+                if not x.startswith(platformPrefix):
+                    return False
+                abi, key = x.rsplit("-", 1)
+                if key in {"BlueprintSettings"}:
+                    if not abi in targets:
+                        print(f"Unable to find {abi} in targets")
+                        exit(1)
+                    return False
+                return True
             targets = set(self._config.sections())
             targets -= Config.ReservedSections
-            for x in targets.copy():
-                if x.endswith("-settings"):
-                    targets.remove(x)
-                    key = x.replace("-settings", "")
-                    if not key in targets:
-                        print(f"Unable to find {key} in targets")
-                        exit(1)
-            self._targets = targets
+            self._targets = list(filter(_filter, targets))
         return self._targets
 
     def getSection(self, section):

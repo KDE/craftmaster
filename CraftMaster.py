@@ -78,7 +78,12 @@ class CraftMaster(object):
             craftRoot = os.path.abspath(os.path.join(workDir, root))
             os.makedirs(os.path.join(craftRoot, "etc"), exist_ok=True)
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
-                self._run(["cmd", "/C", "mklink", "/J", os.path.join(craftRoot, "craft"), os.path.join(workDir, "craft-clone")])
+                src = os.path.join(workDir, "craft-clone")
+                dest =  os.path.join(craftRoot, "craft")
+                if Config.isWin():
+                    self._run(["cmd", "/C", "mklink", "/J", dest, src])
+                else:
+                    os.symlink(src, dest, target_is_directory=True)
             self.craftRoots[root] = craftRoot
 
 
@@ -109,8 +114,16 @@ class CraftMaster(object):
             if "BlueprintSettings" in self.config:
                 self._setBluePrintSettings(self.config.getSection("BlueprintSettings"), craftDir=craftDir)
 
+            if f"{root}-BlueprintSettings" in self.config:
+                print(f"{root}-BlueprintSettings")
+                self._setBluePrintSettings(self.config.getSection(f"{root}-BlueprintSettings"), craftDir=craftDir, extend=True)
+
             if "GeneralSettings" in self.config:
                 self._setSetting(self.config.getSection("GeneralSettings"), craftDir=craftDir, clean=True)
+
+            if f"{root}-GeneralSettings" in self.config:
+                self._setSetting(self.config.getSection(f"{root}-GeneralSettings"), craftDir=craftDir)
+
             if root in self.config:
                 self._setSetting(self.config.getSection(root), craftDir=craftDir)
 
@@ -136,9 +149,11 @@ class CraftMaster(object):
         if os.path.exists(cache):
             os.remove(cache)
 
-    def _setBluePrintSettings(self, settings, craftDir):
+    def _setBluePrintSettings(self, settings, craftDir, extend=False):
         parser = configparser.ConfigParser()
         ini = os.path.join(craftDir, "etc", "BlueprintSettings.ini")
+        if extend and os.path.exists(ini):
+            parser.read(ini)
         for key, value in settings:
             if not "." in key:
                 self._error(f"Invalid BlueprintSetting: {key} = {value}")
@@ -157,7 +172,7 @@ class CraftMaster(object):
         for target, craftDir in sorted(self.craftRoots.items()):
             commands = self.commands
             if not commands:
-                commands = self.config.getSetting("Command", target, None)
+                commands = self.config.get("General", "Command", None)
                 if commands:
                     commands = [c.strip().split(" ") for c in commands.split(";")]
                 if not commands:
