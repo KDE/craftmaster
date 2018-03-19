@@ -115,7 +115,6 @@ class CraftMaster(object):
                 self._setBluePrintSettings(self.config.getSection("BlueprintSettings"), craftDir=craftDir)
 
             if f"{root}-BlueprintSettings" in self.config:
-                print(f"{root}-BlueprintSettings")
                 self._setBluePrintSettings(self.config.getSection(f"{root}-BlueprintSettings"), craftDir=craftDir, extend=True)
 
             if "GeneralSettings" in self.config:
