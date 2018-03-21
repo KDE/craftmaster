@@ -150,6 +150,7 @@ class CraftMaster(object):
 
     def _setBluePrintSettings(self, settings, craftDir, extend=False):
         parser = configparser.ConfigParser()
+        parser.optionxform = str
         ini = os.path.join(craftDir, "etc", "BlueprintSettings.ini")
         if extend and os.path.exists(ini):
             parser.read(ini)

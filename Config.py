@@ -62,7 +62,7 @@ class Config(object):
             print(f"Config file {configFile} does not exist.")
             exit(1)
         self._config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
-        self._config.optionxform = lambda option: option
+        self._config.optionxform = str
         self._config.read(configFile)
         if not "Variables" in self._config.sections():
             self._config.add_section("Variables")
