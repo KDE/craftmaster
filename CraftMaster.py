@@ -164,12 +164,18 @@ class CraftMaster(object):
         with open(ini, 'wt+') as configfile:
             parser.write(configfile)
 
-    def _exec(self, craftDir, args):
+    def _exec(self, target, args):
+        craftDir = self.craftRoots[target]
         for command in args:
-            self._run([sys.executable, "-u", os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
+            python = self.config.get(target, "Paths/Python", None)
+            if python:
+                python = os.path.join(python, "python")
+            else:
+                python = sys.executable
+            self._run([python, "-u", os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
 
     def run(self):
-        for target, craftDir in sorted(self.craftRoots.items()):
+        for target in sorted(self.craftRoots.keys()):
             commands = self.commands
             if not commands:
                 commands = self.config.get("General", "Command", None)
@@ -177,7 +183,7 @@ class CraftMaster(object):
                     commands = [c.strip().split(" ") for c in commands.split(";")]
                 if not commands:
                     return
-            self._exec(craftDir, commands)
+            self._exec(target, commands)
 
 
 

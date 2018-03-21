@@ -61,7 +61,7 @@ class Config(object):
         if not os.path.isfile(configFile):
             print(f"Config file {configFile} does not exist.")
             exit(1)
-        self._config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation())
+        self._config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation(), allow_no_value=True)
         self._config.optionxform = str
         self._config.read(configFile)
         if not "Variables" in self._config.sections():
