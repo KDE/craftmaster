@@ -94,7 +94,7 @@ class CraftMaster(object):
 
         if self.targets:
             if not self.targets.issubset(self.config.targets):
-                for n in self.targets - self.config.targets:
+                for n in self.targets - set(self.config.targets):
                     self._error(f"Target {n} is not a valid target. Valid targets are {self.config.targets}", fatal=False)
                 exit(1)
         else:
