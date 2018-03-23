@@ -77,7 +77,7 @@ class CraftMaster(object):
         if os.path.exists(craftClone):
             shutil.rmtree(craftClone, onerror=CraftMaster.__handleRemoveReadonly)
         branch = self.config.get("General", "Branch", "master")
-        shallowClone = self.config.getBool("General", "ShallowClone", True)
+        shallowClone = self.config.getBool("General", "ShallowClone", False)
         craftUrl = self.config.get("General", "CraftUrl", "git://anongit.kde.org/craft.git")
         args = []
         if shallowClone:
