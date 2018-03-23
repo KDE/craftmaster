@@ -29,6 +29,9 @@ import shutil
 import subprocess
 
 import sys
+import errno
+import stat
+
 
 from Config import Config
 
@@ -37,10 +40,18 @@ class CraftMaster(object):
     def __init__(self, configFile, commands, variables, targets, verbose=False):
         self.commands = [commands] if commands else []
         self.targets = set(targets) if targets else set()
-        self.branch = "master"
-        self.shallowClone = True
         self.verbose = verbose
         self._setConfig(configFile, variables)
+
+    #https://stackoverflow.com/a/1214935
+    def __handleRemoveReadonly(func, path, exc):
+        excvalue = exc[1]
+        if func in (os.rmdir, os.remove, os.unlink) and excvalue.errno == errno.EACCES:
+            os.chmod(path, stat.S_IRWXU| stat.S_IRWXG| stat.S_IRWXO) # 0777
+            func(path)
+        else:
+            raise
+
 
     def _log(self, text, stream=sys.stdout):
         print(text, file=stream)
@@ -63,14 +74,18 @@ class CraftMaster(object):
 
     def _init(self, workDir):
         craftClone = os.path.join(workDir, "craft-clone")
-        if not os.path.exists(craftClone):
-            args = []
-            if self.shallowClone:
-                if self.branch == "master":
-                    args += ["--depth=1"]
-                else:
-                    args += ["--branch", self.branch]
-            self._run(["git", "clone"] + args + ["git://anongit.kde.org/craft.git", craftClone])
+        if os.path.exists(craftClone):
+            shutil.rmtree(craftClone, onerror=CraftMaster.__handleRemoveReadonly)
+        branch = self.config.get("General", "Branch", "master")
+        shallowClone = self.config.getBool("General", "ShallowClone", True)
+        craftUrl = self.config.get("General", "CraftUrl", "git://anongit.kde.org/craft.git")
+        args = []
+        if shallowClone:
+            args += ["--depth=1"]
+        self._run(["git", "clone", "--branch", branch] + args + [craftUrl, craftClone])
+        revision = self.config.get("General", "CraftRevision", None)
+        if revision:
+            self._run(["git", "checkout", "-f", revision])
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
@@ -102,9 +117,6 @@ class CraftMaster(object):
 
         if not self.targets:
             self._error("Please specify at least one target category")
-
-        self.branch = self.config.get("General", "Branch", self.branch)
-        self.shallowClone = self.config.getBool("General", "ShallowClone", True)
 
         self._init(workDir)
         self._setRoots(workDir, self.targets)
@@ -196,7 +208,7 @@ if __name__ == "__main__":
     parser.add_argument("--print-targets", action="store_true",
                         help="Print all available targets.")
     parser.add_argument("-c", "--commands", nargs=argparse.REMAINDER,
-                        help="Commands executed on the taargets. By default the coammand form the configuration is used." )
+                        help="Commands executed on the targets. By default the command form the configuration is used." )
 
     args = parser.parse_args()
 
