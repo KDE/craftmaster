@@ -74,15 +74,18 @@ class CraftMaster(object):
 
     def _init(self, workDir):
         craftClone = os.path.join(workDir, "craft-clone")
-        if os.path.exists(craftClone):
-            shutil.rmtree(craftClone, onerror=CraftMaster.__handleRemoveReadonly)
         branch = self.config.get("General", "Branch", "master")
         shallowClone = self.config.getBool("General", "ShallowClone", False)
         craftUrl = self.config.get("General", "CraftUrl", "git://anongit.kde.org/craft.git")
         args = []
         if shallowClone:
             args += ["--depth=1"]
-        self._run(["git", "clone", "--branch", branch] + args + [craftUrl, craftClone])
+        if shallowClone and os.path.exists(craftClone):
+            shutil.rmtree(craftClone, onerror=CraftMaster.__handleRemoveReadonly)
+
+        if not os.path.exists(craftClone):
+            self._run(["git", "clone", "--branch", branch] + args + [craftUrl, craftClone])
+
         revision = self.config.get("General", "CraftRevision", None)
         if revision:
             self._run(["git", "checkout", "-f", revision])
