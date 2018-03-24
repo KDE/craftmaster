@@ -1,12 +1,12 @@
 [Packages]
-dev-util/qtbinpatcher
-dev-util/nsis
+dev-utils/qtbinpatcher
+dev-utils/nsis
 
 [Qt]
 libs/qt5
 
 [Frameworks]
-frameworks
+kde/frameworks
 
 [Notifications]
 qt-libs/snorenotify
@@ -16,40 +16,40 @@ qt-libs/snorenotify
 kdesupport/qca
 
 # PIM Libraries
-win32libs/libical
+libs/libical
 
 # libkexiv2
-win32libs/exiv2
+libs/exiv2
 
 # KStars
-win32libs/eigen3
+libs/eigen3
 
 # Minuet
-win32libs/glib
-win32libs/fluidsynth
+libs/glib
+libs/fluidsynth
 
 [Extragear]
 # KDevelop
-win32libs/llvm-meta/llvm
+libs/llvm-meta/llvm
 kdesupport/grantlee
 
 # Labplot
-win32libs/gsl
+libs/gsl
 
 # Skrooge
-dev-util/pkg-config
+dev-utils/pkg-config
 
 # akonadi
-win32libs/boost/boost-graph
+libs/boost/boost-graph
 
 # Alkimia
-win32libs/libgmp
-win32libs/mpir
+libs/libgmp
+libs/mpir
 
 # Amarok
-win32libs/taglib
+libs/taglib
 
 # calzy
 ## llvm doesn't install some import libs so we need to cache it to be able to
 ## get it with a cached llvm
-dev-util/clazy
+dev-utils/clazy
