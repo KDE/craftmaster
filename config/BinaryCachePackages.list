@@ -8,6 +8,9 @@ libs/qt5
 [Frameworks]
 kde/frameworks
 
+[kde/applications]
+kde/applications/kate
+
 [Notifications]
 qt-libs/snorenotify
 
