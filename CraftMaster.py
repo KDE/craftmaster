@@ -191,7 +191,7 @@ class CraftMaster(object):
             if not commands:
                 commands = self.config.get("General", "Command", None)
                 if commands:
-                    commands = [c.strip().split(" ") for c in commands.split(";")]
+                    commands = [c.strip().split(" ") for c in commands.split(";") if c]
                 if not commands:
                     return
             self._exec(target, commands)
