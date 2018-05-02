@@ -3,6 +3,9 @@
 [runtime]
 libs/runtime
 
+[dev-utils]
+dev-utils/icoutils
+
 [libs/_autotools]
 libs/assuan2
 libs/gpg-error
