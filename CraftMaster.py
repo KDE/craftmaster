@@ -157,7 +157,7 @@ class CraftMaster(object):
             if not sectin in parser:
                 parser.add_section(sectin)
             parser[sectin][key] = value
-        with open(ini, 'wt+') as configfile:
+        with open(ini, 'wt', encoding="utf-8") as configfile:
             parser.write(configfile)
 
         cache = os.path.join(craftDir, "etc", "cache.pickle")
@@ -169,7 +169,7 @@ class CraftMaster(object):
         parser.optionxform = str
         ini = os.path.join(craftDir, "etc", "BlueprintSettings.ini")
         if extend and os.path.exists(ini):
-            parser.read(ini)
+            parser.read(ini, encoding="utf-8")
         for key, value in settings:
             if not "." in key:
                 self._error(f"Invalid BlueprintSetting: {key} = {value}")
@@ -177,7 +177,7 @@ class CraftMaster(object):
             if not sectin in parser:
                 parser.add_section(sectin)
             parser[sectin][key] = value
-        with open(ini, 'wt+') as configfile:
+        with open(ini, 'wt', encoding="utf-8") as configfile:
             parser.write(configfile)
 
     def _exec(self, target, args):
