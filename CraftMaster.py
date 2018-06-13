@@ -147,9 +147,9 @@ class CraftMaster(object):
         parser = configparser.ConfigParser()
         ini = os.path.join(craftDir, "etc", "CraftSettings.ini")
         if clean or not os.path.isfile(ini):
-            parser.read(os.path.join(craftDir, "craft", "CraftSettings.ini.template"))
+            parser.read(os.path.join(craftDir, "craft", "CraftSettings.ini.template"), encoding="utf-8")
         else:
-            parser.read(ini)
+            parser.read(ini, encoding="utf-8")
         for key, value in settings:
             if not "/" in key:
                 self._error(f"Invalid option: {key} = {value}")
