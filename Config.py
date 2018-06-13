@@ -63,7 +63,7 @@ class Config(object):
             exit(1)
         self._config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation(), allow_no_value=True)
         self._config.optionxform = str
-        self._config.read(configFile)
+        self._config.read(configFile, encoding="utf-8")
         if not "Variables" in self._config.sections():
             self._config.add_section("Variables")
         if variables:
