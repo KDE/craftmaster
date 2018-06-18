@@ -157,6 +157,9 @@ class CraftMaster(object):
             if not sectin in parser:
                 parser.add_section(sectin)
             parser[sectin][key] = value
+
+        # add ourself to the blueprints
+        parser["Blueprints"]["Locations"] = parser["Blueprints"].get("Locations", "") + f";{os.path.dirname(__file__)}/blueprints"
         with open(ini, 'wt', encoding="utf-8") as configfile:
             parser.write(configfile)
 
