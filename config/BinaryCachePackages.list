@@ -52,6 +52,9 @@ libs/mpir
 # Amarok
 libs/taglib
 
+# ocular
+qt-libs/poppler
+
 # calzy
 ## llvm doesn't install some import libs so we need to cache it to be able to
 ## get it with a cached llvm
