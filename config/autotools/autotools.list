@@ -13,5 +13,3 @@ libs/gpg-error
 libs/gcrypt
 libs/gpgme
 libs/libdmtx
-libs/sqlcipher
-
