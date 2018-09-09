@@ -100,7 +100,7 @@ class CraftMaster(object):
                 src = os.path.join(workDir, "craft-clone")
                 dest =  os.path.join(craftRoot, "craft")
                 if Config.isWin():
-                    self._run(["cmd", "/C", "mklink", "/J", dest, src])
+                    self._run(["cmd", "/C", "mklink", "/J", dest.replace("/", "\\"), src.replace("/", "\\")])
                 else:
                     os.symlink(src, dest, target_is_directory=True)
             self.craftRoots[root] = craftRoot

@@ -5,6 +5,7 @@ libs/runtime
 
 [dev-utils]
 dev-utils/icoutils
+dev-utils/pkg-config
 
 [libs/_autotools]
 libs/assuan2
@@ -12,4 +13,3 @@ libs/gpg-error
 libs/gcrypt
 libs/gpgme
 libs/libdmtx
-
