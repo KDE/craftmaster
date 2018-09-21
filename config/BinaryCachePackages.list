@@ -11,9 +11,6 @@ kde/frameworks
 [kde/applications]
 kde/applications/kate
 
-[Notifications]
-qt-libs/snorenotify
-
 [Applications]
 # Various Applications
 kdesupport/qca
