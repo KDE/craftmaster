@@ -51,6 +51,9 @@ libs/taglib
 
 # ocular
 qt-libs/poppler
+libs/ghostscript
+libs/libspectre
+
 
 # calzy
 ## llvm doesn't install some import libs so we need to cache it to be able to
