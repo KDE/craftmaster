@@ -94,7 +94,7 @@ class CraftMaster(object):
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
         for root in craftRoots:
-            craftRoot = os.path.abspath(os.path.join(workDir, root))
+            craftRoot = os.path.abspath(os.path.join(workDir, self.config.get("Settings", "Root", root, target=root)))
             os.makedirs(os.path.join(craftRoot, "etc"), exist_ok=True)
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
                 src = os.path.join(workDir, "craft-clone")

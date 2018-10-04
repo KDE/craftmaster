@@ -98,7 +98,7 @@ class Config(object):
                 if not x.startswith(platformPrefix):
                     return False
                 abi, key = x.rsplit("-", 1)
-                if key in {"BlueprintSettings"}:
+                if key in {"BlueprintSettings", "Settings"}:
                     if not abi in targets:
                         print(f"Unable to find {abi} in targets")
                         exit(1)
@@ -112,11 +112,13 @@ class Config(object):
     def getSection(self, section):
         return self._config[section].items()
 
-
-    def get(self, section, key, default=configparser._UNSET):
+    def get(self, section, key, default=configparser._UNSET, target=None):
+        targetSection = f"{target}-{section}"
+        if (targetSection, key) in self:
+            return self._config.get(targetSection, key)
         if default != configparser._UNSET and not (section, key) in self:
             return default
         return self._config.get(section, key)
 
-    def getBool(self, section, key, default=False):
-        return self._config._convert_to_boolean(self.get(section, key, default=str(default)))
+    def getBool(self, section, key, default=False, target=None):
+        return self._config._convert_to_boolean(self.get(section, key, default=str(default), target=target))
