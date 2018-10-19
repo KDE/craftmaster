@@ -126,62 +126,55 @@ class CraftMaster(object):
         self._setRoots(workDir, self.targets)
 
         for root in self.targets:
-            craftDir = craftDir=self.craftRoots[root]
+            craftDir = self.craftRoots[root]
+            blueprintSetting = Config.readIni()
+
             if "BlueprintSettings" in self.config:
-                self._setBluePrintSettings(self.config.getSection("BlueprintSettings"), craftDir=craftDir)
+                self._setBluePrintSettings(self.config.getSection("BlueprintSettings"), config=blueprintSetting)
 
             if f"{root}-BlueprintSettings" in self.config:
-                self._setBluePrintSettings(self.config.getSection(f"{root}-BlueprintSettings"), craftDir=craftDir, extend=True)
+                self._setBluePrintSettings(self.config.getSection(f"{root}-BlueprintSettings"), config=blueprintSetting)
 
+            Config.writeIni(blueprintSetting, os.path.join(craftDir, "etc", "BlueprintSettings.ini"))
+
+            settings = Config.readIni(os.path.join(craftDir, "craft", "CraftSettings.ini.template"))
             if "GeneralSettings" in self.config:
-                self._setSetting(self.config.getSection("GeneralSettings"), craftDir=craftDir, clean=True)
+                self._setSetting(self.config.getSection("GeneralSettings"), config=settings)
 
             if f"{root}-GeneralSettings" in self.config:
-                self._setSetting(self.config.getSection(f"{root}-GeneralSettings"), craftDir=craftDir)
+                # this doesn't make any sense?
+                self._log(f"Please replace the config: '{root}-GeneralSettings'  with '{root}' ")
+                self._setSetting(self.config.getSection(f"{root}-GeneralSettings"), config=settings)
 
             if root in self.config:
-                self._setSetting(self.config.getSection(root), craftDir=craftDir)
+                self._setSetting(self.config.getSection(root), config=settings)
 
+            Config.writeIni(settings, os.path.join(craftDir, "etc", "CraftSettings.ini"))
 
-    def _setSetting(self, settings, craftDir, clean=False):
-        parser = configparser.ConfigParser()
-        ini = os.path.join(craftDir, "etc", "CraftSettings.ini")
-        if clean or not os.path.isfile(ini):
-            parser.read(os.path.join(craftDir, "craft", "CraftSettings.ini.template"), encoding="utf-8")
-        else:
-            parser.read(ini, encoding="utf-8")
+            cache = os.path.join(craftDir, "etc", "cache.pickle")
+            if os.path.exists(cache):
+                os.remove(cache)
+
+    def _setSetting(self, settings, config):
         for key, value in settings:
             if not "/" in key:
                 self._error(f"Invalid option: {key} = {value}")
             sectin, key = key.split("/", 1)
-            if not sectin in parser:
-                parser.add_section(sectin)
-            parser[sectin][key] = value
+            if not sectin in config:
+                config.add_section(sectin)
+            config[sectin][key] = value
 
         # add ourself to the blueprints
-        parser["Blueprints"]["Locations"] = parser["Blueprints"].get("Locations", "") + f";{os.path.dirname(__file__)}/blueprints"
-        with open(ini, 'wt', encoding="utf-8") as configfile:
-            parser.write(configfile)
+        config["Blueprints"]["Locations"] = config["Blueprints"].get("Locations", "") + f";{os.path.dirname(__file__)}/blueprints"
 
-        cache = os.path.join(craftDir, "etc", "cache.pickle")
-        if os.path.exists(cache):
-            os.remove(cache)
-
-    def _setBluePrintSettings(self, settings, craftDir, extend=False):
-        parser = configparser.ConfigParser()
-        parser.optionxform = str
-        ini = os.path.join(craftDir, "etc", "BlueprintSettings.ini")
-        if extend and os.path.exists(ini):
-            parser.read(ini, encoding="utf-8")
+    def _setBluePrintSettings(self, settings, config):
         for key, value in settings:
             if not "." in key:
                 self._error(f"Invalid BlueprintSetting: {key} = {value}")
             sectin, key = key.split(".", 1)
-            if not sectin in parser:
-                parser.add_section(sectin)
-            parser[sectin][key] = value
-        with open(ini, 'wt', encoding="utf-8") as configfile:
-            parser.write(configfile)
+            if sectin not in config:
+                config.add_section(sectin)
+            config[sectin][key] = value
 
     def _exec(self, target, args):
         craftDir = self.craftRoots[target]
