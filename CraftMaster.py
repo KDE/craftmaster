@@ -138,6 +138,9 @@ class CraftMaster(object):
             Config.writeIni(blueprintSetting, os.path.join(craftDir, "etc", "BlueprintSettings.ini"))
 
             settings = Config.readIni(os.path.join(craftDir, "craft", "CraftSettings.ini.template"))
+            # set some useful defaults
+            settings.set("Compile", "MakeProgram", "jom" if Config.isWin() else "make")
+
             if "GeneralSettings" in self.config:
                 self._setSetting(self.config.getSection("GeneralSettings"), config=settings)
 
