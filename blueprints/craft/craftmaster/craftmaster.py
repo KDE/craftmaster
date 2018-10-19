@@ -28,24 +28,16 @@ import info
 
 class subinfo(info.infoclass):
     def setTargets(self):
-        self.targets["master"] = "git://anongit.kde.org/craftmaster"
+        self.svnTargets["master"] = "[git]"
         self.defaultTarget = "master"
 
-from Package.VirtualPackageBase import *
+from Package.BlueprintRepositoryPackageBase import *
 
 
-class Package(SourceComponentPackageBase):
+class Package(BlueprintRepositoryPackageBase):
     def __init__(self):
-        SourceOnlyPackageBase.__init__(self)
-        self.subinfo.options.package.disableBinaryCache = True
-        self.subinfo.options.dailyUpdate = True
-
-    def qmerge(self):
-        if not SourceOnlyPackageBase.qmerge(self):
-            return False
-        CraftCore.cache.clear()
-        return True
+        BlueprintRepositoryPackageBase.__init__(self)
 
     def checkoutDir(self, index=0):
-        return os.path.join(os.path.dirname(__file__), "..")
+        return os.path.join(os.path.dirname(__file__), "..", "..", "..")
 
