@@ -11,6 +11,9 @@ kde/frameworks
 [kde/applications]
 kde/applications/kate
 
+[Notifications]
+qt-libs/snorenotify
+
 [Applications]
 # Various Applications
 kdesupport/qca
@@ -51,8 +54,14 @@ libs/taglib
 
 # ocular
 qt-libs/poppler
+libs/ghostscript
+libs/libspectre
+
 
 # calzy
 ## llvm doesn't install some import libs so we need to cache it to be able to
 ## get it with a cached llvm
 dev-utils/clazy
+
+# other
+binary/vlc
