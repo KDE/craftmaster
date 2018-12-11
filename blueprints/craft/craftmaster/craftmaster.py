@@ -28,8 +28,9 @@ import info
 
 class subinfo(info.infoclass):
     def setTargets(self):
-        self.svnTargets["master"] = "[git]"
-        self.defaultTarget = "master"
+        for ver in ["master", "stable"]:
+            self.svnTargets[ver] = "[git]"
+        self.defaultTarget = "stable"
 
 from Package.BlueprintRepositoryPackageBase import *
 
