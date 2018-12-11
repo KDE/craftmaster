@@ -29,7 +29,7 @@ import info
 class subinfo(info.infoclass):
     def setTargets(self):
         for ver in ["master", "stable"]:
-            self.svnTargets[ver] = "[git]"
+            self.svnTargets[ver] = f"git://anongit.kde.org/craftmaster|{ver}|"
         self.defaultTarget = "master"
 
 from Package.BlueprintRepositoryPackageBase import *
