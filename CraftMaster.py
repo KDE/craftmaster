@@ -142,7 +142,7 @@ class CraftMaster(object):
             # set some useful defaults
             settings.set("Compile", "MakeProgram", "jom" if Config.isWin() else "make")
             # add ourself to the blueprints
-            settings.set("Blueprints", "Locations", f"{os.path.dirname(__file__)}/blueprints;" + settings["Blueprints"].get("Locations", ""))
+            settings.set("Blueprints", "Locations", f"{os.path.dirname(os.path.abspath(__file__))}/blueprints;" + settings["Blueprints"].get("Locations", ""))
 
             if "GeneralSettings" in self.config:
                 self._setSetting(self.config.getSection("GeneralSettings"), config=settings)
