@@ -138,8 +138,11 @@ class CraftMaster(object):
             Config.writeIni(blueprintSetting, os.path.join(craftDir, "etc", "BlueprintSettings.ini"))
 
             settings = Config.readIni(os.path.join(craftDir, "craft", "CraftSettings.ini.template"))
+
             # set some useful defaults
             settings.set("Compile", "MakeProgram", "jom" if Config.isWin() else "make")
+            # add ourself to the blueprints
+            settings.set("Blueprints", "Locations", f"{os.path.dirname(__file__)}/blueprints;" + settings["Blueprints"].get("Locations", ""))
 
             if "GeneralSettings" in self.config:
                 self._setSetting(self.config.getSection("GeneralSettings"), config=settings)
@@ -167,8 +170,6 @@ class CraftMaster(object):
                 config.add_section(sectin)
             config[sectin][key] = value
 
-        # add ourself to the blueprints
-        config["Blueprints"]["Locations"] = config["Blueprints"].get("Locations", "") + f";{os.path.dirname(__file__)}/blueprints"
 
     def _setBluePrintSettings(self, settings, config):
         for key, value in settings:
