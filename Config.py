@@ -75,6 +75,7 @@ class Config(object):
                 self._config.set("Variables", key, value)
         self._config.set("Variables", "Root", self.get("Variables", "Root", self.defaultWorkDir))
         self._config.set("Variables", "CraftMasterRoot", os.path.dirname(__file__))
+        self._config.set("Variables", "CraftMasterConfigFolder", os.path.abspath(os.path.dirname(configFile)))
 
         if self.get("General", "DumpConfig", default=False):
             with open(configFile + ".dump", "wt+") as dump:
