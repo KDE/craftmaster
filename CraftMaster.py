@@ -66,7 +66,7 @@ class CraftMaster(object):
             self._log(text)
 
     def _run(self, args, **kwargs):
-        command = " ".join(args)
+        command = f"{kwargs.get('cwd', os.getcwd())}: {' '.join(args)}"
         self._debug(command)
         out = subprocess.run(args, stderr=subprocess.STDOUT, **kwargs)
         if not out.returncode == 0:
@@ -91,8 +91,8 @@ class CraftMaster(object):
         if revision:
             self._run(["git", "checkout", "-f", revision])
         else:
-            self._run(["git", "checkout", branch])
-            self._run(["git", "pull"])
+            self._run(["git", "checkout", branch], cwd=craftClone)
+            self._run(["git", "pull"], cwd=craftClone)
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
@@ -159,7 +159,7 @@ class CraftMaster(object):
                 self._setSetting(self.config.getSection(root), config=settings)
 
             blueprintRoot = settings.get("Blueprints", "BlueprintRoot", fallback=None)
-            if blueprintRoot:
+            if blueprintRoot and os.path.exists(blueprintRoot):
                 for d in os.listdir(blueprintRoot):
                     self._run(["git", "pull"], cwd=os.path.join(blueprintRoot, d))
 
