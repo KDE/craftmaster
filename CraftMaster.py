@@ -86,13 +86,13 @@ class CraftMaster(object):
 
         if not os.path.exists(craftClone):
             self._run(["git", "clone", "--branch", branch] + args + [craftUrl, craftClone])
+        else:
+            self._run(["git", "checkout", branch])
+            self._run(["git", "pull"])
 
         revision = self.config.get("General", "CraftRevision", None)
         if revision:
             self._run(["git", "checkout", "-f", revision])
-        else:
-            self._run(["git", "checkout", branch])
-            self._run(["git", "pull"])
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
@@ -161,7 +161,7 @@ class CraftMaster(object):
             blueprintRoot = settings.get("Blueprints", "BlueprintRoot", fallback=None)
             if blueprintRoot:
                 for d in os.listdir(blueprintRoot):
-                    self._run(["git", "pull"], cwd=os.path.join(blueprintRoot, d))
+                    self._run(["git", "pull"], cwd=d)
 
             Config.writeIni(settings, os.path.join(craftDir, "etc", "CraftSettings.ini"))
 
