@@ -137,29 +137,34 @@ class CraftMaster(object):
 
             Config.writeIni(blueprintSetting, os.path.join(craftDir, "etc", "BlueprintSettings.ini"))
 
-            settings = Config.readIni(os.path.join(craftDir, "craft", "CraftSettings.ini.template"))
+            settingsFile = os.path.join(craftDir, "craft", "CraftSettings.ini.template")
+            try:
+                settings = Config.readIni(settingsFile)
 
-            # set some useful defaults
-            settings.set("Compile", "MakeProgram", "jom" if Config.isWin() else "make")
-            # add ourself to the blueprints
-            settings.set("Blueprints", "Locations", f"{os.path.dirname(os.path.abspath(__file__))}/blueprints;" + settings["Blueprints"].get("Locations", ""))
+                # set some useful defaults
+                settings.set("Compile", "MakeProgram", "jom" if Config.isWin() else "make")
+                # add ourself to the blueprints
+                settings.set("Blueprints", "Locations", f"{os.path.dirname(os.path.abspath(__file__))}/blueprints;" + settings["Blueprints"].get("Locations", ""))
 
-            if "GeneralSettings" in self.config:
-                self._setSetting(self.config.getSection("GeneralSettings"), config=settings)
+                if "GeneralSettings" in self.config:
+                    self._setSetting(self.config.getSection("GeneralSettings"), config=settings)
 
-            if f"{root}-GeneralSettings" in self.config:
-                # this doesn't make any sense?
-                self._log(f"Please replace the config: '{root}-GeneralSettings'  with '{root}' ")
-                self._setSetting(self.config.getSection(f"{root}-GeneralSettings"), config=settings)
+                if f"{root}-GeneralSettings" in self.config:
+                    # this doesn't make any sense?
+                    self._log(f"Please replace the config: '{root}-GeneralSettings'  with '{root}' ")
+                    self._setSetting(self.config.getSection(f"{root}-GeneralSettings"), config=settings)
 
-            if root in self.config:
-                self._setSetting(self.config.getSection(root), config=settings)
+                if root in self.config:
+                    self._setSetting(self.config.getSection(root), config=settings)
 
-            Config.writeIni(settings, os.path.join(craftDir, "etc", "CraftSettings.ini"))
+                Config.writeIni(settings, os.path.join(craftDir, "etc", "CraftSettings.ini"))
 
-            cache = os.path.join(craftDir, "etc", "cache.pickle")
-            if os.path.exists(cache):
-                os.remove(cache)
+                cache = os.path.join(craftDir, "etc", "cache.pickle")
+                if os.path.exists(cache):
+                    os.remove(cache)
+            except Exception as e:
+                    self._error(f"Failed to setup settings {settingsFile}\n{e}")
+                    
 
     def _setSetting(self, settings, config):
         for key, value in settings:
