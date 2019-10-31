@@ -163,7 +163,8 @@ class CraftMaster(object):
                 if os.path.exists(cache):
                     os.remove(cache)
             except Exception as e:
-                    self._error(f"Failed to setup settings {settingsFile}\n{e}")
+                    with open(settingsFile, "rt") as f:
+                       self._error(f"Failed to setup settings {settingsFile}\n{e}\n\nTemplate:\n{f.read()}")
                     
 
     def _setSetting(self, settings, config):
