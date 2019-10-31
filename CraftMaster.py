@@ -138,6 +138,8 @@ class CraftMaster(object):
             Config.writeIni(blueprintSetting, os.path.join(craftDir, "etc", "BlueprintSettings.ini"))
 
             settingsFile = os.path.join(craftDir, "craft", "CraftSettings.ini.template")
+            if not os.path.exists(settingsFile):
+                self._error(f"{settingsFile} does not exist")
             try:
                 settings = Config.readIni(settingsFile)
 
