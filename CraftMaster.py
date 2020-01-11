@@ -142,9 +142,6 @@ class CraftMaster(object):
                 self._error(f"{settingsFile} does not exist")
             try:
                 settings = Config.readIni(settingsFile)
-
-                # set some useful defaults
-                settings.set("Compile", "MakeProgram", "jom" if Config.isWin() else "make")
                 # add ourself to the blueprints
                 settings.set("Blueprints", "Locations", f"{os.path.dirname(os.path.abspath(__file__))}/blueprints;" + settings["Blueprints"].get("Locations", ""))
 
@@ -167,7 +164,7 @@ class CraftMaster(object):
             except Exception as e:
                     with open(settingsFile, "rt") as f:
                        self._error(f"Failed to setup settings {settingsFile}\n{e}\n\nTemplate:\n{f.read()}")
-                    
+
 
     def _setSetting(self, settings, config):
         for key, value in settings:
