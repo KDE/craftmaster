@@ -210,7 +210,7 @@ if __name__ == "__main__":
                         help="Enable verbose logging of CraftMaster")
     parser.add_argument("--config", action="store", required=True,
                         help="The path to the configuration file.")
-    parser.add_argument("--config-override", action="append",
+    parser.add_argument("--config-override", action="append", default=[],
                         help="The path to a configuration override.")
     parser.add_argument("--variables", action="store", nargs="+",
                         help="Set values for the [Variables] section in the configuration.")
