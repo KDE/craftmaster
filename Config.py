@@ -55,15 +55,15 @@ class Config(object):
         elif Config.isLinux():
             return "linux"
 
-    def __init__(self, configFile, variables):
+    def __init__(self, configFiles : [str], variables):
         self._targets = None
-
-        if not os.path.isfile(configFile):
-            print(f"Config file {configFile} does not exist.")
-            exit(1)
         self._config = configparser.ConfigParser(interpolation=configparser.ExtendedInterpolation(), allow_no_value=True)
         self._config.optionxform = str
-        self._config.read(configFile, encoding="utf-8")
+        for configFile in configFiles:
+            if not os.path.isfile(configFile):
+                print(f"Config file {configFile} does not exist.")
+                exit(1)
+            self._config.read(configFile, encoding="utf-8")
         if not "Variables" in self._config.sections():
             self._config.add_section("Variables")
         if variables:

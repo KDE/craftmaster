@@ -37,11 +37,11 @@ from Config import Config
 
 
 class CraftMaster(object):
-    def __init__(self, configFile, commands, variables, targets, verbose=False):
+    def __init__(self, configFiles : [str], commands, variables, targets, verbose=False):
         self.commands = [commands] if commands else []
         self.targets = set(targets) if targets else set()
         self.verbose = verbose
-        self._setConfig(configFile, variables)
+        self._setConfig(configFiles, variables)
 
     #https://stackoverflow.com/a/1214935
     @staticmethod
@@ -106,8 +106,8 @@ class CraftMaster(object):
             self.craftRoots[root] = craftRoot
 
 
-    def _setConfig(self, configFile, variables):
-        self.config = Config(configFile, variables)
+    def _setConfig(self, configFiles, variables):
+        self.config = Config(configFiles, variables)
 
         workDir = self.config.get("Variables", "Root")
 
@@ -210,6 +210,8 @@ if __name__ == "__main__":
                         help="Enable verbose logging of CraftMaster")
     parser.add_argument("--config", action="store", required=True,
                         help="The path to the configuration file.")
+    parser.add_argument("--config-override", action="append",
+                        help="The path to a configuration override.")
     parser.add_argument("--variables", action="store", nargs="+",
                         help="Set values for the [Variables] section in the configuration.")
     parser.add_argument("--targets", action="store", nargs="+",
@@ -220,8 +222,9 @@ if __name__ == "__main__":
                         help="Commands executed on the targets. By default the command form the configuration is used." )
 
     args = parser.parse_args()
-
-    master = CraftMaster(args.config, args.commands, args.variables, args.targets, verbose=args.verbose)
+    configs = [args.config]
+    configs += args.config_override
+    master = CraftMaster(configs, args.commands, args.variables, args.targets, verbose=args.verbose)
     if args.print_targets:
         print("Targets:")
         for target in master.targets:
