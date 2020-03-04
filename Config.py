@@ -78,7 +78,7 @@ class Config(object):
         self._config.set("Variables", "CraftMasterConfigFolder", os.path.abspath(os.path.dirname(configFile)))
         if "Env" not in self._config.sections():
             self._config.add_section("Env")
-        self._config["Env"].update(filter(lambda i: "$" not in i[0], os.environ.items()))
+        self._config["Env"].update(filter(lambda i: "$" not in i[0] and "$" not in i[1] , os.environ.items()))
 
         if self.get("General", "DumpConfig", default=False):
             with open(configFile + ".dump", "wt+", encoding="UTF-8") as dump:
