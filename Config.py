@@ -81,8 +81,10 @@ class Config(object):
         self._config["Env"].update(os.environ)
 
         if self.get("General", "DumpConfig", default=False):
-            with open(configFile + ".dump", "wt+") as dump:
-                self._config.write(dump)
+            with open(configFile + ".dump", "wt+", encoding="UTF-8") as dump:
+                for section, value in self._config.items():
+                    dump.write(f"[{section}]\n")
+                    dump.writelines([f"{k} = {v}\n" for k,v in value.items()] + ["\n\n"])
 
     def __contains__( self, key ):
         if isinstance(key, tuple):
