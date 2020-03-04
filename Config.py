@@ -28,7 +28,7 @@ import platform
 
 
 class Config(object):
-    ReservedSections = {"General", "GeneralSettings", "Variables", "BlueprintSettings"}
+    ReservedSections = {"General", "GeneralSettings", "Variables", "BlueprintSettings", "Env"}
 
     @staticmethod
     def isWin():
@@ -76,6 +76,9 @@ class Config(object):
         self._config.set("Variables", "Root", self.get("Variables", "Root", self.defaultWorkDir))
         self._config.set("Variables", "CraftMasterRoot", os.path.dirname(__file__))
         self._config.set("Variables", "CraftMasterConfigFolder", os.path.abspath(os.path.dirname(configFile)))
+        if "Env" not in self._config.sections():
+            self._config.add_section("Env")
+        self._config["Env"].update(os.environ)
 
         if self.get("General", "DumpConfig", default=False):
             with open(configFile + ".dump", "wt+") as dump:
