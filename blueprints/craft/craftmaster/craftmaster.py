@@ -39,6 +39,7 @@ from Package.BlueprintRepositoryPackageBase import *
 class Package(BlueprintRepositoryPackageBase):
     def __init__(self):
         BlueprintRepositoryPackageBase.__init__(self)
+        self.subinfo.shelveAble = False
 
     def checkoutDir(self, index=0):
         return os.path.join(os.path.dirname(__file__), "..", "..", "..")
