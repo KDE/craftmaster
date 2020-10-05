@@ -24,23 +24,23 @@
 
 import argparse
 import configparser
+import errno
 import os
 import shutil
-import subprocess
-
-import sys
-import errno
 import stat
-
+import subprocess
+import sys
+from pathlib import Path
 
 from Config import Config
 
 
 class CraftMaster(object):
-    def __init__(self, configFiles : [str], commands, variables, targets, verbose=False):
+    def __init__(self, configFiles : [str], commands, variables, targets, setup : bool=False ,verbose=False):
         self.commands = [commands] if commands else []
         self.targets = set(targets) if targets else set()
         self.verbose = verbose
+        self.doSetup = setup
         self._setConfig(configFiles, variables)
 
     #https://stackoverflow.com/a/1214935
@@ -128,6 +128,13 @@ class CraftMaster(object):
         for root in self.targets:
             craftDir = self.craftRoots[root]
             blueprintSetting = Config.readIni()
+            # TODO: use ini?
+            setupFile =  Path(craftDir) / "etc/craftmaster_setup"
+            if not self.doSetup and setupFile.exists():
+                continue
+            if self.doSetup:
+                setupFile.touch()
+            self._log("Generate Settings")
 
             if "BlueprintSettings" in self.config:
                 self._setBluePrintSettings(self.config.getSection("BlueprintSettings"), config=blueprintSetting)
@@ -210,6 +217,8 @@ if __name__ == "__main__":
                         help="Enable verbose logging of CraftMaster")
     parser.add_argument("--config", action="store", required=True,
                         help="The path to the configuration file.")
+    parser.add_argument("--setup", action="store_true",
+                        help="When this option is provided, regeneration of the generated settings will only be performed explicitly by setting this flag.")
     parser.add_argument("--config-override", action="append", default=[],
                         help="The path to a configuration override.")
     parser.add_argument("--variables", action="store", nargs="+",
@@ -224,7 +233,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     configs = [args.config]
     configs += args.config_override
-    master = CraftMaster(configs, args.commands, args.variables, args.targets, verbose=args.verbose)
+    master = CraftMaster(configs, args.commands, args.variables, args.targets, setup=args.setup, verbose=args.verbose)
     if args.print_targets:
         print("Targets:")
         for target in master.targets:
