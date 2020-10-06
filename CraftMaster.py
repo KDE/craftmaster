@@ -134,7 +134,7 @@ class CraftMaster(object):
                 continue
             if self.doSetup:
                 setupFile.touch()
-            self._log("Generate Settings", file=sys.stderr)
+            self._log("Generate Settings", stream=sys.stderr)
 
             if "BlueprintSettings" in self.config:
                 self._setBluePrintSettings(self.config.getSection("BlueprintSettings"), config=blueprintSetting)
