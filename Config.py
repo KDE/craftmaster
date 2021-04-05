@@ -44,7 +44,11 @@ class Config(object):
 
     @staticmethod
     def isLinux():
-        return Config.isUnix() and platform.system() == 'Linux'
+        return Config.isUnix() and platform.system() == 'Linux' and not Config.isAndroid()
+
+    @staticmethod
+    def isAndroid():
+        return len(os.environ["ANDROID_NDK"]) > 0
 
     @staticmethod
     def platformPrefix():
@@ -54,6 +58,8 @@ class Config(object):
             return "macos"
         elif Config.isLinux():
             return "linux"
+        elif Config.isAndroid():
+            return "android"
 
     def __init__(self, configFiles : [str], variables):
         self._targets = None
