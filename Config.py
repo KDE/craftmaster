@@ -48,7 +48,7 @@ class Config(object):
 
     @staticmethod
     def isAndroid():
-        return len(os.environ["ANDROID_NDK"]) > 0
+        return "ANDROID_NDK" in os.environ
 
     @staticmethod
     def platformPrefix():
