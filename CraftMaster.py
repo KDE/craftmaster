@@ -80,7 +80,7 @@ class CraftMaster(object):
         craftUrl = self.config.get("General", "CraftUrl", "https://invent.kde.org/kde/craft.git")
         args = []
         if shallowClone:
-            args += ["--depth=1"]
+            args += ["--depth=1", "--no-single-branch"]
         if forceClone and os.path.exists(craftClone):
             shutil.rmtree(craftClone, onerror=CraftMaster.__handleRemoveReadonly)
 
