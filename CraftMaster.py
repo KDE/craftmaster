@@ -77,7 +77,7 @@ class CraftMaster(object):
         branch = self.config.get("General", "Branch", "master")
         forceClone = self.config.getBool("General", "ForceClone", False)
         shallowClone = self.config.getBool("General", "ShallowClone", False)
-        craftUrl = self.config.get("General", "CraftUrl", "https://invent.kde.org/kde/craft.git")
+        craftUrl = self.config.get("General", "CraftUrl", "https://invent.kde.org/packaging/craft.git")
         args = []
         if shallowClone:
             args += ["--depth=1", "--no-single-branch"]
