@@ -211,6 +211,7 @@ class CraftMaster(object):
 
 
 if __name__ == "__main__":
+    print("CraftMaster Arguments:", subprocess.list2cmdline(sys.argv), file=sys.stderr)
     parser = argparse.ArgumentParser(prog="Craft Master")
     parser.add_argument("--version", action="version", version="%(prog)s 0.2.9")
     parser.add_argument("--verbose", action="store_true",
