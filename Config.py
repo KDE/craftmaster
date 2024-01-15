@@ -137,7 +137,7 @@ class Config(object):
 
     @staticmethod
     def readIni(path=None):
-        parser = configparser.ConfigParser()
+        parser = configparser.ConfigParser(interpolation=None)
         parser.optionxform = str
         if path:
             parser.read(path, encoding="utf-8")
