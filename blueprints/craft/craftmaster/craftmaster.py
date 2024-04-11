@@ -37,8 +37,8 @@ from Package.BlueprintRepositoryPackageBase import *
 
 
 class Package(BlueprintRepositoryPackageBase):
-    def __init__(self):
-        BlueprintRepositoryPackageBase.__init__(self)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.subinfo.shelveAble = False
 
     def checkoutDir(self, index=0):
