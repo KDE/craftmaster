@@ -35,7 +35,15 @@ from Config import Config
 
 
 class CraftMaster(object):
-    def __init__(self, configFiles: [str], commands, variables, targets, setup: bool = False, verbose=False):
+    def __init__(
+        self,
+        configFiles: [str],
+        commands,
+        variables,
+        targets,
+        setup: bool = False,
+        verbose=False,
+    ):
         self.commands = [commands] if commands else []
         self.targets = set(targets) if targets else set()
         self.verbose = verbose
@@ -76,7 +84,9 @@ class CraftMaster(object):
         branch = self.config.get("General", "Branch", "master")
         forceClone = self.config.getBool("General", "ForceClone", False)
         shallowClone = self.config.getBool("General", "ShallowClone", False)
-        craftUrl = self.config.get("General", "CraftUrl", "https://invent.kde.org/packaging/craft.git")
+        craftUrl = self.config.get(
+            "General", "CraftUrl", "https://invent.kde.org/packaging/craft.git"
+        )
         args = []
         if shallowClone:
             args += ["--depth=1", "--no-single-branch"]
@@ -84,7 +94,9 @@ class CraftMaster(object):
             shutil.rmtree(craftClone, onerror=CraftMaster.__handleRemoveReadonly)
 
         if not os.path.exists(craftClone):
-            self._run(["git", "clone", "--branch", branch] + args + [craftUrl, craftClone])
+            self._run(
+                ["git", "clone", "--branch", branch] + args + [craftUrl, craftClone]
+            )
 
         revision = self.config.get("General", "CraftRevision", None)
         if revision:
@@ -93,13 +105,26 @@ class CraftMaster(object):
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
         for root in craftRoots:
-            craftRoot = os.path.abspath(os.path.join(workDir, self.config.get("Settings", "Root", root, target=root)))
+            craftRoot = os.path.abspath(
+                os.path.join(
+                    workDir, self.config.get("Settings", "Root", root, target=root)
+                )
+            )
             os.makedirs(os.path.join(craftRoot, "etc"), exist_ok=True)
             if not os.path.isfile(os.path.join(craftRoot, "craft", "craftenv.ps1")):
                 src = os.path.join(workDir, "craft-clone")
                 dest = os.path.join(craftRoot, "craft")
                 if Config.isWin():
-                    self._run(["cmd", "/C", "mklink", "/J", dest.replace("/", "\\"), src.replace("/", "\\")])
+                    self._run(
+                        [
+                            "cmd",
+                            "/C",
+                            "mklink",
+                            "/J",
+                            dest.replace("/", "\\"),
+                            src.replace("/", "\\"),
+                        ]
+                    )
                 else:
                     os.symlink(src, dest, target_is_directory=True)
             self.craftRoots[root] = craftRoot
@@ -112,7 +137,10 @@ class CraftMaster(object):
         if self.targets:
             if not self.targets.issubset(self.config.targets):
                 for n in self.targets - set(self.config.targets):
-                    self._error(f"Target {n} is not a valid target. Valid targets are {self.config.targets}", fatal=False)
+                    self._error(
+                        f"Target {n} is not a valid target. Valid targets are {self.config.targets}",
+                        fatal=False,
+                    )
                 exit(1)
         else:
             self.targets = self.config.targets
@@ -135,12 +163,19 @@ class CraftMaster(object):
             self._log("Generate Settings", stream=sys.stderr)
 
             if "BlueprintSettings" in self.config:
-                self._setBluePrintSettings(self.config.getSection("BlueprintSettings"), config=blueprintSetting)
+                self._setBluePrintSettings(
+                    self.config.getSection("BlueprintSettings"), config=blueprintSetting
+                )
 
             if f"{root}-BlueprintSettings" in self.config:
-                self._setBluePrintSettings(self.config.getSection(f"{root}-BlueprintSettings"), config=blueprintSetting)
+                self._setBluePrintSettings(
+                    self.config.getSection(f"{root}-BlueprintSettings"),
+                    config=blueprintSetting,
+                )
 
-            Config.writeIni(blueprintSetting, os.path.join(craftDir, "etc", "BlueprintSettings.ini"))
+            Config.writeIni(
+                blueprintSetting, os.path.join(craftDir, "etc", "BlueprintSettings.ini")
+            )
 
             settingsFile = os.path.join(craftDir, "craft", "CraftSettings.ini.template")
             if not os.path.exists(settingsFile):
@@ -148,27 +183,43 @@ class CraftMaster(object):
             try:
                 settings = Config.readIni(settingsFile)
                 # add ourself to the blueprints
-                settings.set("Blueprints", "Locations", f"{os.path.dirname(os.path.abspath(__file__))}/blueprints;" + settings["Blueprints"].get("Locations", ""))
+                settings.set(
+                    "Blueprints",
+                    "Locations",
+                    f"{os.path.dirname(os.path.abspath(__file__))}/blueprints;"
+                    + settings["Blueprints"].get("Locations", ""),
+                )
 
                 if "GeneralSettings" in self.config:
-                    self._setSetting(self.config.getSection("GeneralSettings"), config=settings)
+                    self._setSetting(
+                        self.config.getSection("GeneralSettings"), config=settings
+                    )
 
                 if f"{root}-GeneralSettings" in self.config:
                     # this doesn't make any sense?
-                    self._log(f"Please replace the config: '{root}-GeneralSettings'  with '{root}' ")
-                    self._setSetting(self.config.getSection(f"{root}-GeneralSettings"), config=settings)
+                    self._log(
+                        f"Please replace the config: '{root}-GeneralSettings'  with '{root}' "
+                    )
+                    self._setSetting(
+                        self.config.getSection(f"{root}-GeneralSettings"),
+                        config=settings,
+                    )
 
                 if root in self.config:
                     self._setSetting(self.config.getSection(root), config=settings)
 
-                Config.writeIni(settings, os.path.join(craftDir, "etc", "CraftSettings.ini"))
+                Config.writeIni(
+                    settings, os.path.join(craftDir, "etc", "CraftSettings.ini")
+                )
 
                 cache = os.path.join(craftDir, "etc", "cache.pickle")
                 if os.path.exists(cache):
                     os.remove(cache)
             except Exception as e:
                 with open(settingsFile, "rt") as f:
-                    self._error(f"Failed to setup settings {settingsFile}\n{e}\n\nTemplate:\n{f.read()}")
+                    self._error(
+                        f"Failed to setup settings {settingsFile}\n{e}\n\nTemplate:\n{f.read()}"
+                    )
 
     def _setSetting(self, settings, config):
         for key, value in settings:
@@ -191,7 +242,16 @@ class CraftMaster(object):
     def _exec(self, target, args):
         craftDir = self.craftRoots[target]
         for command in args:
-            self._run([sys.executable, "-X", "utf8", "-u", os.path.join(craftDir, "craft", "bin", "craft.py")] + command)
+            self._run(
+                [
+                    sys.executable,
+                    "-X",
+                    "utf8",
+                    "-u",
+                    os.path.join(craftDir, "craft", "bin", "craft.py"),
+                ]
+                + command
+            )
 
     def run(self):
         for target in sorted(self.craftRoots.keys()):
@@ -209,27 +269,56 @@ if __name__ == "__main__":
     print("CraftMaster Arguments:", subprocess.list2cmdline(sys.argv), file=sys.stderr)
     parser = argparse.ArgumentParser(prog="Craft Master")
     parser.add_argument("--version", action="version", version="%(prog)s 0.2.9")
-    parser.add_argument("--verbose", action="store_true",
-                        help="Enable verbose logging of CraftMaster")
-    parser.add_argument("--config", action="store", required=True,
-                        help="The path to the configuration file.")
-    parser.add_argument("--setup", action="store_true",
-                        help="When this option is provided, regeneration of the generated settings will only be performed explicitly by setting this flag.")
-    parser.add_argument("--config-override", action="append", default=[],
-                        help="The path to a configuration override.")
-    parser.add_argument("--variables", action="store", nargs="+",
-                        help="Set values for the [Variables] section in the configuration.")
-    parser.add_argument("--targets", action="store", nargs="+",
-                        help="Only use on a subset of targets")
-    parser.add_argument("--print-targets", action="store_true",
-                        help="Print all available targets.")
-    parser.add_argument("-c", "--commands", nargs=argparse.REMAINDER,
-                        help="Commands executed on the targets. By default the command form the configuration is used.")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Enable verbose logging of CraftMaster"
+    )
+    parser.add_argument(
+        "--config",
+        action="store",
+        required=True,
+        help="The path to the configuration file.",
+    )
+    parser.add_argument(
+        "--setup",
+        action="store_true",
+        help="When this option is provided, regeneration of the generated settings will only be performed explicitly by setting this flag.",
+    )
+    parser.add_argument(
+        "--config-override",
+        action="append",
+        default=[],
+        help="The path to a configuration override.",
+    )
+    parser.add_argument(
+        "--variables",
+        action="store",
+        nargs="+",
+        help="Set values for the [Variables] section in the configuration.",
+    )
+    parser.add_argument(
+        "--targets", action="store", nargs="+", help="Only use on a subset of targets"
+    )
+    parser.add_argument(
+        "--print-targets", action="store_true", help="Print all available targets."
+    )
+    parser.add_argument(
+        "-c",
+        "--commands",
+        nargs=argparse.REMAINDER,
+        help="Commands executed on the targets. By default the command form the configuration is used.",
+    )
 
     args = parser.parse_args()
     configs = [args.config]
     configs += args.config_override
-    master = CraftMaster(configs, args.commands, args.variables, args.targets, setup=args.setup, verbose=args.verbose)
+    master = CraftMaster(
+        configs,
+        args.commands,
+        args.variables,
+        args.targets,
+        setup=args.setup,
+        verbose=args.verbose,
+    )
     if args.print_targets:
         print("Targets:")
         for target in master.targets:
