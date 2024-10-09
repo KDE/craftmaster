@@ -24,6 +24,8 @@
 
 
 import info
+import os
+from Package.BlueprintRepositoryPackageBase import BlueprintRepositoryPackageBase
 
 
 class subinfo(info.infoclass):
@@ -33,8 +35,6 @@ class subinfo(info.infoclass):
             self.targetUpdatedRepoUrl[ver] = ("git://anongit.kde.org/craftmaster", "https://invent.kde.org/packaging/craftmaster.git")
         self.defaultTarget = "master"
 
-from Package.BlueprintRepositoryPackageBase import *
-
 
 class Package(BlueprintRepositoryPackageBase):
     def __init__(self, **kwargs):
@@ -43,4 +43,3 @@ class Package(BlueprintRepositoryPackageBase):
 
     def checkoutDir(self, index=0):
         return os.path.join(os.path.dirname(__file__), "..", "..", "..")
-
