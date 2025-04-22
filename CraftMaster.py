@@ -100,7 +100,7 @@ class CraftMaster(object):
 
         revision = self.config.get("General", "CraftRevision", None)
         if revision:
-            self._run(["git", "checkout", "-f", revision])
+            self._run(["git", "-C", craftClone, "checkout", "-f", revision])
 
     def _setRoots(self, workDir, craftRoots):
         self.craftRoots = {}
