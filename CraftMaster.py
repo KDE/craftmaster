@@ -48,8 +48,7 @@ class CraftMaster(object):
         self.targets = set(targets) if targets else set()
         self.verbose = verbose
         self.doSetup = setup
-        configFiles =  [Path(x).absolute() for x in configs]
-        self._setConfig(configFiles, variables)
+        self._setConfig([Path(x).absolute() for x in configFiles], variables)
 
     # https://stackoverflow.com/a/1214935
     @staticmethod
@@ -130,7 +129,7 @@ class CraftMaster(object):
                     os.symlink(src, dest, target_is_directory=True)
             self.craftRoots[root] = craftRoot
 
-    def _setConfig(self, configFiles : Path, variables):
+    def _setConfig(self, configFiles: Path, variables):
         self.config = Config(configFiles, variables)
 
         workDir = self.config.get("Variables", "Root")
