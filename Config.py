@@ -25,6 +25,7 @@
 import configparser
 import os
 import platform
+from pathlib import Path
 
 
 class Config(object):
@@ -69,14 +70,15 @@ class Config(object):
         elif Config.isAndroid():
             return "android"
 
-    def __init__(self, configFiles: [str], variables):
+    def __init__(self, configFiles: [Path], variables):
         self._targets = None
         self._config = configparser.ConfigParser(
             interpolation=configparser.ExtendedInterpolation(), allow_no_value=True
         )
         self._config.optionxform = str
         for configFile in configFiles:
-            if not os.path.isfile(configFile):
+            print(f"Reading config file {configFile}")
+            if not configFile.is_file():
                 print(f"Config file {configFile} does not exist.")
                 exit(1)
             self._config.read(configFile, encoding="utf-8")
@@ -96,7 +98,7 @@ class Config(object):
         self._config.set(
             "Variables",
             "CraftMasterConfigFolder",
-            os.path.abspath(os.path.dirname(configFile)),
+            configFiles[0].parent.resolve().as_posix(),
         )
         if "Env" not in self._config.sections():
             self._config.add_section("Env")
@@ -105,7 +107,7 @@ class Config(object):
         )
 
         if self.get("General", "DumpConfig", default=False):
-            with open(configFile + ".dump", "wt+", encoding="UTF-8") as dump:
+            with open(f"{configFiles[0]}.dump", "wt+", encoding="UTF-8") as dump:
                 for section, value in self._config.items():
                     dump.write(f"[{section}]\n")
                     dump.writelines(
