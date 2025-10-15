@@ -77,7 +77,6 @@ class Config(object):
         )
         self._config.optionxform = str
         for configFile in configFiles:
-            print(f"Reading config file {configFile}")
             if not configFile.is_file():
                 print(f"Config file {configFile} does not exist.")
                 exit(1)
