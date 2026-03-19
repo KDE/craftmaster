@@ -241,6 +241,13 @@ class CraftMaster(object):
 
     def _exec(self, target, args):
         craftDir = self.craftRoots[target]
+        try:
+            level = int(os.environ.get("CRAFT_VERBOSE", "0"))
+        except ValueError:
+            level = 0
+        level = max(0, min(level, 3))
+        option_list = ["-" + "v" * level] if level > 0 else []
+
         for command in args:
             self._run(
                 [
@@ -250,6 +257,7 @@ class CraftMaster(object):
                     "-u",
                     os.path.join(craftDir, "craft", "bin", "craft.py"),
                 ]
+                + option_list
                 + command
             )
 
