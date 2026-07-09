@@ -12,9 +12,9 @@ from Package.BlueprintRepositoryPackageBase import BlueprintRepositoryPackageBas
 class subinfo(info.infoclass):
     def setTargets(self):
         for ver in ["master", "stable"]:
-            self.svnTargets[
-                ver
-            ] = f"https://invent.kde.org/packaging/craftmaster.git|{ver}|"
+            self.svnTargets[ver] = (
+                f"https://invent.kde.org/packaging/craftmaster.git|{ver}|"
+            )
             self.targetUpdatedRepoUrl[ver] = (
                 "git://anongit.kde.org/craftmaster",
                 "https://invent.kde.org/packaging/craftmaster.git",
