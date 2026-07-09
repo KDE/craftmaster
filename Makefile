@@ -7,3 +7,9 @@ TARGETS = check-imports format lint reuse sort-imports
 ${TARGETS}:
 	@tox -e $@
 
+.PHONY: test
+test:
+	python3 -m unittest tests/test_craftmaster.py
+	python3 -m py_compile CraftMaster.py Config.py tests/test_craftmaster.py
+	git diff --check
+

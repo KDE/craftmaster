@@ -5,7 +5,9 @@
 
 import argparse
 import errno
+import json
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -29,6 +31,7 @@ class CraftMaster(object):
         self.targets = set(targets) if targets else set()
         self.verbose = verbose
         self.doSetup = setup
+        self._setDefaultCraftPackage()
         self._setConfig([Path(x).absolute() for x in configFiles], variables)
 
     # https://stackoverflow.com/a/1214935
@@ -59,6 +62,106 @@ class CraftMaster(object):
         out = subprocess.run(args, stderr=subprocess.STDOUT, **kwargs)
         if not out.returncode == 0:
             self._error(f"Command {command} failed with exit code: {out.returncode}")
+
+    @staticmethod
+    def _extractPackageFromTitle(title):
+        title = title.strip()
+        patterns = (
+            (r"^\[(?P<package>[^\]\s][^\]]*?)\]\s+.+", "'[<package>] Description'"),
+            (r"^(?P<package>[^:\s][^:]*?):\s+.+", "'<package>: Description'"),
+        )
+        for pattern, description in patterns:
+            match = re.match(pattern, title)
+            if match:
+                return match.group("package").strip(), description
+        return None, None
+
+    @staticmethod
+    def _titleCandidatesFromEnvironment():
+        errors = []
+        candidates = [
+            ("CI_MERGE_REQUEST_TITLE", os.environ.get("CI_MERGE_REQUEST_TITLE")),
+            ("CI_COMMIT_TITLE", os.environ.get("CI_COMMIT_TITLE")),
+            (
+                "CI_COMMIT_MESSAGE",
+                os.environ.get("CI_COMMIT_MESSAGE", "").splitlines()[0]
+                if os.environ.get("CI_COMMIT_MESSAGE")
+                else None,
+            ),
+        ]
+
+        githubEventPath = os.environ.get("GITHUB_EVENT_PATH")
+        if githubEventPath:
+            try:
+                with open(githubEventPath, "rt", encoding="utf-8") as eventFile:
+                    event = json.load(eventFile)
+                pullRequestTitle = event.get("pull_request", {}).get("title")
+                headCommitMessage = event.get("head_commit", {}).get("message")
+                candidates.extend(
+                    [
+                        ("GITHUB_EVENT_PATH pull_request.title", pullRequestTitle),
+                        (
+                            "GITHUB_EVENT_PATH head_commit.message",
+                            headCommitMessage.splitlines()[0]
+                            if headCommitMessage
+                            else None,
+                        ),
+                    ]
+                )
+            except (OSError, ValueError) as e:
+                errors.append(f"GITHUB_EVENT_PATH={githubEventPath!r}: {e}")
+
+        return [(source, title) for source, title in candidates if title], errors
+
+    def _setDefaultCraftPackage(self):
+        if os.environ.get("CRAFT_PACKAGE"):
+            self._debug(
+                "CRAFT_PACKAGE is already set; not extracting it from the title"
+            )
+            return
+
+        candidates, errors = self._titleCandidatesFromEnvironment()
+        if not candidates:
+            errorDetails = ""
+            if errors:
+                errorDetails = (
+                    " Unable to use title source(s): " + "; ".join(errors) + "."
+                )
+            self._log(
+                "Warning: CRAFT_PACKAGE was not set and no merge request or commit title "
+                "environment variable was found. Expected CI_MERGE_REQUEST_TITLE or "
+                "CI_COMMIT_TITLE in the format '[<package>] Description' or "
+                "'<package>: Description'."
+                + errorDetails
+                + " Continuing without CRAFT_PACKAGE.",
+                stream=sys.stderr,
+            )
+            return
+
+        malformed = []
+        for source, title in candidates:
+            package, pattern = self._extractPackageFromTitle(title)
+            if package:
+                os.environ["CRAFT_PACKAGE"] = package
+                self._debug(
+                    f"Extracted CRAFT_PACKAGE={package} from {source} using {pattern}"
+                )
+                return
+            malformed.append(f"{source}={title!r}")
+
+        self._log(
+            "Warning: CRAFT_PACKAGE was not set and no package name could be extracted "
+            "from the available merge request or commit title(s). Expected the title to "
+            "start with '[<package>] Description' or '<package>: Description'. Checked: "
+            + "; ".join(malformed)
+            + (
+                ". Unable to use title source(s): " + "; ".join(errors)
+                if errors
+                else ""
+            )
+            + ". Continuing without CRAFT_PACKAGE.",
+            stream=sys.stderr,
+        )
 
     def _init(self, workDir):
         craftClone = os.path.join(workDir, "craft-clone")
