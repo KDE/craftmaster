@@ -132,7 +132,7 @@ class Config(object):
         targetSection = f"{target}-{section}"
         if (targetSection, key) in self:
             return self._config.get(targetSection, key)
-        if default != configparser._UNSET and not (section, key) in self:
+        if default != configparser._UNSET and (section, key) not in self:
             return default
         return self._config.get(section, key)
 
