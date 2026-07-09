@@ -5,3 +5,4 @@
 
 # ignored by reuse
 __pycache__/
+.venv/

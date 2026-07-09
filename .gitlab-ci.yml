@@ -31,3 +31,7 @@ lint:
 imports:
   extends: .tox_base
   script: tox -e check-imports
+
+reuse:
+  extends: .tox_base
+  script: tox -e reuse
