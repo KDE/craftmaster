@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: NONE
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
 Craft Master
 ============
 Orchestrate multiple [Craft](https://cgit.kde.org/craft.git/) configurations.

@@ -2,3 +2,6 @@
 
 # tox
 .tox/
+
+# ignored by reuse
+__pycache__/

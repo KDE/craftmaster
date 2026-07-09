@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: NONE
+#
+# SPDX-License-Identifier: CC0-1.0
+
 # List of C libraries we can't build with msvc but we can link to
 # if they are compiled with mingw
 [runtime]

@@ -1,0 +1,12 @@
+version = 1
+SPDX-PackageName = "CraftMaster"
+SPDX-PackageDownloadLocation = "https://invent.kde.org/packaging/craftmaster"
+
+[[annotations]]
+path = [
+    "logo.png",
+    ".gitignore",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["", "NONE"]
+SPDX-License-Identifier = "CC0-1.0"
