@@ -31,7 +31,6 @@ class CraftMaster(object):
         self.targets = set(targets) if targets else set()
         self.verbose = verbose
         self.doSetup = setup
-        self._setDefaultCraftPackage()
         self._setConfig([Path(x).absolute() for x in configFiles], variables)
 
     # https://stackoverflow.com/a/1214935
@@ -367,8 +366,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         action="store",
-        required=True,
         help="The path to the configuration file.",
+    )
+    parser.add_argument(
+        "--determine-package",
+        action="store_true",
+        help="Print the package name determined from CRAFT_PACKAGE or CI titles.",
     )
     parser.add_argument(
         "--setup",
@@ -401,6 +404,18 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
+    if args.determine_package:
+        master = CraftMaster.__new__(CraftMaster)
+        master.verbose = args.verbose
+        master._setDefaultCraftPackage()
+
+        if "CRAFT_PACKAGE" not in os.environ:
+            master._error("Aborting because the package name is required")
+
+        print(os.environ["CRAFT_PACKAGE"])
+        exit(0)
+    if not args.config:
+        parser.error("--config is required unless --determine-package is used")
     configs = [args.config]
     configs += args.config_override
     master = CraftMaster(

@@ -6,6 +6,8 @@ import contextlib
 import io
 import json
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -53,10 +55,10 @@ class CraftPackageExtractionTest(unittest.TestCase):
                 self.make_master()._setDefaultCraftPackage()
 
             self.assertNotIn("CRAFT_PACKAGE", os.environ)
+            self.assertIn("Unable to use title source(s): GITHUB_EVENT_PATH", stderr.getvalue())
             self.assertIn(
-                "Unable to use title source(s): GITHUB_EVENT_PATH", stderr.getvalue()
+                "Warning: CRAFT_PACKAGE was not set and no merge request", stderr.getvalue()
             )
-            self.assertIn("Continuing without CRAFT_PACKAGE", stderr.getvalue())
 
     def test_sets_craft_package_from_github_pull_request_title(self):
         with tempfile.NamedTemporaryFile(
@@ -77,6 +79,22 @@ class CraftPackageExtractionTest(unittest.TestCase):
                 self.assertEqual(os.environ["CRAFT_PACKAGE"], "okular")
         finally:
             os.unlink(event_path)
+
+    def test_determine_package_option_prints_detected_package_without_config(self):
+        env = {
+            "PATH": os.environ["PATH"],
+            "CI_COMMIT_TITLE": "kcalc: Build package",
+        }
+        completed = subprocess.run(
+            [sys.executable, "CraftMaster.py", "--determine-package"],
+            check=True,
+            encoding="utf-8",
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        self.assertEqual(completed.stdout.strip(), "kcalc")
 
 
 if __name__ == "__main__":
