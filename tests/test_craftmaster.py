@@ -27,8 +27,22 @@ class CraftPackageExtractionTest(unittest.TestCase):
             "kdeconnect-kde",
         )
         self.assertEqual(
-            CraftMaster._extractPackageFromTitle("kate: Build package")[0],
+            CraftMaster._extractPackageFromTitle("Kate: Build package")[0],
             "kate",
+        )
+        self.assertEqual(
+            CraftMaster._extractPackageFromTitle(
+                "Draft: [kdeconnect-kde] Build package"
+            )[0],
+            "kdeconnect-kde",
+        )
+        self.assertEqual(
+            CraftMaster._extractPackageFromTitle("Draft: kate: Build package")[0],
+            "kate",
+        )
+        # "Draft" is not returned as package name
+        self.assertIsNone(
+            CraftMaster._extractPackageFromTitle("Draft: Update kate")[0]
         )
 
     def test_sets_craft_package_from_merge_request_title(self):

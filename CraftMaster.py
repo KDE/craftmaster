@@ -66,13 +66,24 @@ class CraftMaster(object):
     def _extractPackageFromTitle(title):
         title = title.strip()
         patterns = (
+            (
+                r"^Draft: \[(?P<package>[^\]\s][^\]]*?)\]\s+.+",
+                "'Draft: [<package>] Description'",
+            ),
             (r"^\[(?P<package>[^\]\s][^\]]*?)\]\s+.+", "'[<package>] Description'"),
+            (
+                r"^Draft: *(?P<package>[^:\s][^:]*?):\s+.+",
+                "'Draft: <package>: Description'",
+            ),
             (r"^(?P<package>[^:\s][^:]*?):\s+.+", "'<package>: Description'"),
         )
         for pattern, description in patterns:
             match = re.match(pattern, title)
             if match:
-                return match.group("package").strip(), description
+                package = match.group("package").strip().lower()
+                # Ignore "Draft" which is much more likely the prefix of the title of a draft MR than a package name
+                if package != "draft":
+                    return package, description
         return None, None
 
     @staticmethod
